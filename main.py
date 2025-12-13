@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
-from test import testagent
-from pydantic import BaseModel
 from dotenv import load_dotenv
+from typing import List
+from pydantic import BaseModel
+from WorkoutCoach import WorkoutCoach, PlanOutput
+
 
 load_dotenv()
 
@@ -31,22 +33,25 @@ async def generate_workout(query: str):
     
     return {"workout": f"Generated plan for: {query}"}
 
+
 class Input(BaseModel):
+    days: int
     goal: str
-    days: str
     train: str
 
-@app.post("/agent")
+# Instantiate the coach
+coach = WorkoutCoach()
+
+@app.post("/agent", response_model=List[PlanOutput])
 async def run_agent(data: Input):
+    """
+    Receives frontend input and returns multiple structured workout plans.
+    """
     try:
-        # Call your AI function
-        output = await testagent(data.days, data.goal, data.train)
-        return {"txt": output}
+        results = await coach.run(data.days, data.goal, data.train, n=3)
+        return results
     except Exception as e:
-        # Return the error so React can show it
         return {"error": str(e)}
-
-
 
 if __name__ == "__main__":
     import uvicorn

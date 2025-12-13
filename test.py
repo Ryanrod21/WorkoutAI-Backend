@@ -1,20 +1,47 @@
-import asyncio
-from agents import Agent, Runner 
-from dotenv import load_dotenv
+from pydantic import BaseModel, Field
+from agents import Agent
 
-load_dotenv()
+# -------------------------------
+# Instructions (constant)
+# -------------------------------
+INSTRUCTIONS = (
+    "You are a Workout Plan Generator agent.\n"
+    "Your job:\n"
+    "- Create a concise workout plan for the user.\n"
+    "- Use the following user info: days, goal, train.\n"
+    "- Return ONLY raw JSON.\n"
+    "- Do NOT wrap in markdown or code fences.\n"
+    "- Respond with valid JSON ONLY in this format:\n"
+    "{\n"
+    '  "plan_summary": "string",\n'
+    '  "exercises": [\n'
+    "    {\n"
+    '      "name": "string",\n'
+    '      "reps_sets": "string",\n'
+    '      "notes": "string"\n'
+    "    }\n"
+    "  ]\n"
+    "}"
+)
 
+# -------------------------------
+# Output model
+# -------------------------------
+class Exercise(BaseModel):
+    name: str = Field(description="Name of the exercise")
+    reps_sets: str = Field(description="Reps and sets for the exercise")
+    notes: str = Field(description="Additional notes or tips for the exercise")
 
-async def testagent(days, goal, train):
-    instructions = f"Make a short sentence using days={days}, goal={goal}, train={train}"
-    agent = Agent(name="TestAgent", 
-                  instructions=instructions, 
-                  model="gpt-4o-mini")
+class PlanOutput(BaseModel):
+    plan_summary: str = Field(description="A concise summary of the workout plan")
+    exercises: list[Exercise] = Field(description="List of exercises included in the plan")
 
-    # Combine all inputs into a single string
-    input_text = f"{days}, {goal}, {train}"
-
-    result = await Runner.run(agent, input_text)  # pass as single argument
-    return result.final_output
-
-
+# -------------------------------
+# Agent definition
+# -------------------------------
+WorkoutPlanAgent = Agent(
+    name="WorkoutPlanAgent",
+    instructions=INSTRUCTIONS,
+    model="gpt-4o-mini",
+    output_type=PlanOutput,
+)
