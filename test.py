@@ -9,18 +9,21 @@ INSTRUCTIONS = (
     "Your job:\n"
     "- Create a concise workout plan for the user.\n"
     "- Use the following user info: days, goal, train.\n"
+    "- Each day shoud have 4 workous. \n"
     "- Return ONLY raw JSON.\n"
     "- Do NOT wrap in markdown or code fences.\n"
     "- Respond with valid JSON ONLY in this format:\n"
     "{\n"
     '  "plan_summary": "string",\n'
-    '  "exercises": [\n'
-    "    {\n"
-    '      "name": "string",\n'
-    '      "reps_sets": "string",\n'
-    '      "notes": "string"\n'
-    "    }\n"
-    "  ]\n"
+    '  "days": [\n'
+            '  "exercises": [\n'
+            "    {\n"
+            '      "name": "string",\n'
+            '      "reps_sets": "string",\n'
+            '      "notes": "string"\n'
+        "    }\n"
+        "  ]\n"
+        ']'
     "}"
 )
 
