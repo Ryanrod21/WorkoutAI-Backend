@@ -9,7 +9,8 @@ INSTRUCTIONS = (
     "Your job:\n"
     "- Create a concise workout plan for the user.\n"
     "- Use the following user info: days, goal, train.\n"
-    "- Each day shoud have 4 workous. \n"
+    "- Number of days MUST equal the user's selected days.\n"
+    "- Each day MUST contain exactly 4 exercises.\n"
     "- Return ONLY raw JSON.\n"
     "- Do NOT wrap in markdown or code fences.\n"
     "- Respond with valid JSON ONLY in this format:\n"
@@ -40,9 +41,15 @@ class Exercise(BaseModel):
     reps_sets: str = Field(description="Reps and sets for the exercise")
     notes: str = Field(description="Additional notes or tips for the exercise")
 
+class Day(BaseModel):
+    day: str = Field(description="Day label (e.g. Day 1, Monday)")
+    focus: str = Field(description="Workout focus for the day")
+    exercises: list[Exercise] = Field(description="Exercises for this day")
+
 class PlanOutput(BaseModel):
     plan_summary: str = Field(description="A concise summary of the workout plan")
-    exercises: list[Exercise] = Field(description="List of exercises included in the plan")
+    days: list[Day] = Field(description="Workout days in the plan")
+
 
 # -------------------------------
 # Agent definition
