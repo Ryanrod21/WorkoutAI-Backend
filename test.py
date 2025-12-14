@@ -14,17 +14,22 @@ INSTRUCTIONS = (
     "- Do NOT wrap in markdown or code fences.\n"
     "- Respond with valid JSON ONLY in this format:\n"
     "{\n"
-    '  "plan_summary": "string",\n'
-    '  "days": [\n'
-            '  "exercises": [\n'
-            "    {\n"
-            '      "name": "string",\n'
-            '      "reps_sets": "string",\n'
-            '      "notes": "string"\n'
-        "    }\n"
-        "  ]\n"
-        ']'
-    "}"
+'  "plan_summary": "string",\n'
+'  "days": [\n'
+'    {\n'
+'      "day": "Day 1",\n'
+'      "focus": "string",\n'
+'      "exercises": [\n'
+'        {\n'
+'          "name": "string",\n'
+'          "reps_sets": "string",\n'
+'          "notes": "string"\n'
+'        }\n'
+'      ]\n'
+'    }\n'
+'  ]\n'
+"}"
+
 )
 
 # -------------------------------
