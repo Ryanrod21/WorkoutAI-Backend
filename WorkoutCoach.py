@@ -1,6 +1,6 @@
 import asyncio
 from typing import List
-from test import WorkoutPlanAgent, PlanOutput
+from ExerciseBuilder import WorkoutPlanAgent, PlanOutput
 from agents import Runner  # Runner is needed to execute the agent
 
 class WorkoutCoach:

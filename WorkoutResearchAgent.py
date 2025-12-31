@@ -1,4 +1,4 @@
-from agents import Agent, WebSearchTool, ModelSettings
+from agents import Agent, WebSearchTool
 from pydantic import BaseModel, Field
 
 websearch = 3
