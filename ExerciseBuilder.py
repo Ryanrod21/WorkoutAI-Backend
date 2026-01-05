@@ -14,23 +14,40 @@ INSTRUCTIONS = (
     "- Return ONLY raw JSON.\n"
     "- Do NOT wrap in markdown or code fences.\n"
     "- Respond with valid JSON ONLY in this format:\n"
-    "{\n"
-'  "plan_summary": "string",\n'
-'  "days": [\n'
-'    {\n'
-'      "day": "Day 1",\n'
-'      "focus": "string",\n'
-'      "exercises": [\n'
-'        {\n'
-'          "name": "string",\n'
-'          "reps_sets": "string",\n'
-'          "notes": "string"\n'
-'        }\n'
-'      ]\n'
-'    }\n'
-'  ]\n'
-"}"
-
+    'Based on the user\'s answers, generate EXACTLY three workout plans.\n'
+    '\n'
+    'Each plan MUST correspond to one of the following categories.\n'
+    'Each category must appear ONCE and ONLY ONCE.\n'
+    'Do NOT merge categories.\n'
+    'Do NOT rename categories.\n'
+    '\n'
+    'CATEGORIES:\n'
+    '- Strength Builder\n'
+    '- Athletic Performance\n'
+    '- Endurance Elite\n'
+    '\n'
+    'Return VALID JSON ONLY in the following format:\n'
+    '{\n'
+    '  "plans": [\n'
+    '    {\n'
+    '      "category": "Strength Builder | Athletic Performance | Endurance Elite",\n'
+    '      "plan_summary": "string",\n'
+    '      "days": [\n'
+    '        {\n'
+    '          "day": "Day 1",\n'
+    '          "focus": "string",\n'
+    '          "exercises": [\n'
+    '            {\n'
+    '              "name": "string",\n'
+    '              "reps_sets": "string",\n'
+    '              "notes": "string"\n'
+    '            }\n'
+    '          ]\n'
+    '        }\n'
+    '      ]\n'
+    '    }\n'
+    '  ]\n'
+    '}\n'
 )
 
 # -------------------------------
@@ -47,9 +64,14 @@ class Day(BaseModel):
     exercises: list[Exercise] = Field(description="Exercises for this day")
 
 class PlanOutput(BaseModel):
+    category: str = Field(description="Workout category: Strength Builder, Athletic Performance, or Endurance Elite")
     plan_summary: str = Field(description="A concise summary of the workout plan")
     days: list[Day] = Field(description="Workout days in the plan")
 
+class WorkoutPlansResponse(BaseModel):
+    plans: list[PlanOutput] = Field(
+        description="Exactly three workout plans, one per category"
+    )
 
 # -------------------------------
 # Agent definition
@@ -58,5 +80,5 @@ WorkoutPlanAgent = Agent(
     name="WorkoutPlanAgent",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
-    output_type=PlanOutput,
+    output_type=WorkoutPlansResponse,
 )

@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from typing import List
 from pydantic import BaseModel
-from WorkoutCoach import WorkoutCoach, PlanOutput
+from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse
 
 
 load_dotenv()
@@ -27,11 +27,11 @@ app.add_middleware(
 def home():
     return {"message": "AI Gym Coach API running!"}
 
-@app.get("/workout")
-async def generate_workout(query: str):
-    # Call your GymManager here
+# @app.get("/workout")
+# async def generate_workout(query: str):
+#     # Call your GymManager here
     
-    return {"workout": f"Generated plan for: {query}"}
+#     return {"workout": f"Generated plan for: {query}"}
 
 
 class Input(BaseModel):
@@ -42,7 +42,7 @@ class Input(BaseModel):
 # Instantiate the coach
 coach = WorkoutCoach()
 
-@app.post("/agent", response_model=List[PlanOutput])
+@app.post("/agent", response_model=List[WorkoutPlansResponse])
 async def run_agent(data: Input):
     """
     Receives frontend input and returns multiple structured workout plans.
