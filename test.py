@@ -14,12 +14,14 @@ async def main():
     coach = WorkoutCoach()
 
     # 🔧 Dummy / test input
-    days = 4
+    days = 6
     goal = "muscle gain"
     train = "gym"
+    experience = "intermediate - 1-2 years"
+    minutes = 60 
     n = 1  # start with 1 for easier debugging
 
-    results = await coach.run(days, goal, train, n)
+    results = await coach.run(days, goal, train,  experience, minutes, n)
 
     print("\n✅ WORKOUT COACH RESPONSE\n")
 

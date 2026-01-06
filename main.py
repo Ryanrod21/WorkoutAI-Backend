@@ -38,6 +38,8 @@ class Input(BaseModel):
     days: int
     goal: str
     train: str
+    experience: str
+    minutes: int
 
 # Instantiate the coach
 coach = WorkoutCoach()
@@ -48,7 +50,7 @@ async def run_agent(data: Input):
     Receives frontend input and returns multiple structured workout plans.
     """
     try:
-        results = await coach.run(data.days, data.goal, data.train, n=3)
+        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes, n=3)
         return results
     except Exception as e:
         return {"error": str(e)}
