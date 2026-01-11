@@ -1,9 +1,6 @@
 from pydantic import BaseModel, Field
 from agents import Agent
 
-# -------------------------------
-# Instructions (constant)
-# -------------------------------
 INSTRUCTIONS = (
     "You are a Workout Plan Generator agent.\n"
     "Your job:\n"
@@ -50,9 +47,6 @@ INSTRUCTIONS = (
     '}\n'
 )
 
-# -------------------------------
-# Output model
-# -------------------------------
 class Exercise(BaseModel):
     name: str = Field(description="Name of the exercise")
     reps_sets: str = Field(description="Reps and sets for the exercise")
@@ -73,9 +67,7 @@ class WorkoutPlansResponse(BaseModel):
         description="Exactly three workout plans, one per category"
     )
 
-# -------------------------------
-# Agent definition
-# -------------------------------
+
 WorkoutPlanAgent = Agent(
     name="WorkoutPlanAgent",
     instructions=INSTRUCTIONS,
