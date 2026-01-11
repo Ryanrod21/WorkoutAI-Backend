@@ -60,7 +60,7 @@ INSTRUCTIONS = (
 class Exercise(BaseModel):
     name: str = Field(description="Name of the exercise")
     reps_sets: str = Field(description="Reps and sets for the exercise")
-    notes: str = Field(description="Additional notes or tips for the exercise")
+    notes: str = Field(description="Additional notes or tips on how to do the exercise")
 
 class Day(BaseModel):
     day: str = Field(description="Day label (e.g. Day 1, Monday)")
