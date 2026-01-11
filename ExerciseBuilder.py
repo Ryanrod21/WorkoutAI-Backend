@@ -23,12 +23,22 @@ INSTRUCTIONS = (
     '- Athletic Performance\n'
     '- Endurance Elite\n'
     '\n'
+    'Each week should have four points on what to expect during the week of workout. \n'
+    'Each point should be short a short sentence. \n'
+    'Each expect should appear ONCE per a plan \n'
+    'DO NOT REPEAT ANY EXPECT \n' 
+    'EXPECT: examples\n'
+    '- Heavy | Moderate | Light | Body Weight \n'
+    '- High | Moderate | Light | No Cardio \n'
+    '- A lot of weight Training | A lot of Cardio | Explosive Training \n'
+    '- Can be done anywhere with weights | Can be done in gym or outside | Needs to be Outdoor or Gym \n' 
     'Return VALID JSON ONLY in the following format:\n'
     '{\n'
     '  "plans": [\n'
     '    {\n'
     '      "category": "Strength Builder | Athletic Performance | Endurance Elite",\n'
     '      "plan_summary": "string",\n'
+    '      "expect: "string",'
     '      "days": [\n'
     '        {\n'
     '          "day": "Day 1",\n'
@@ -59,6 +69,7 @@ class Day(BaseModel):
 
 class PlanOutput(BaseModel):
     category: str = Field(description="Workout category: Strength Builder, Athletic Performance, or Endurance Elite")
+    expect: str =Field(description="Four short points of the workout ")
     plan_summary: str = Field(description="A concise summary of the workout plan")
     days: list[Day] = Field(description="Workout days in the plan")
 
