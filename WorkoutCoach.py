@@ -4,9 +4,9 @@ from ExerciseBuilder import WorkoutPlanAgent, WorkoutPlansResponse
 from agents import Runner  # Runner is needed to execute the agent
 
 class WorkoutCoach:
-    async def run(self, days: int, goal: str, train: str, experience: str, minutes: int):
+    async def run(self, days: int, goal: str, train: str, experience: str, minutes: int, n: int = 3) -> WorkoutPlansResponse:
         # Run n tasks in parallel
-        tasks = [self.plan_search(days, goal, train, experience, minutes)]
+        tasks = [self.plan_search(days, goal, train, experience, minutes) for _ in range(n)]
         results = await asyncio.gather(*tasks)
         return results
 
