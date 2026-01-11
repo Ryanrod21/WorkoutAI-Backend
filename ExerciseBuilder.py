@@ -69,7 +69,7 @@ class Day(BaseModel):
 
 class PlanOutput(BaseModel):
     category: str = Field(description="Workout category: Strength Builder, Athletic Performance, or Endurance Elite")
-    expect: str =Field(description="Four short points of the workout ")
+    expect:  list[str] = Field(description="Four short points of the workout ")
     plan_summary: str = Field(description="A concise summary of the workout plan")
     days: list[Day] = Field(description="Workout days in the plan")
 
