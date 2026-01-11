@@ -19,9 +19,9 @@ async def main():
     train = "gym"
     experience = "intermediate - 1-2 years"
     minutes = 60 
-    n = 1  # start with 1 for easier debugging
 
-    results = await coach.run(days, goal, train,  experience, minutes, n)
+
+    results = await coach.run(days, goal, train,  experience, minutes)
 
     print("\n✅ WORKOUT COACH RESPONSE\n")
 
