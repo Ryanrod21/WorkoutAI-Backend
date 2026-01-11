@@ -10,7 +10,7 @@ class WorkoutCoach:
         results = await asyncio.gather(*tasks)
         return results
 
-    async def plan_search(self, days: int, goal: str, train: str, experience: str, minutes: int,) -> WorkoutPlansResponse:
+    async def plan_search(self, days: int, goal: str, train: str, experience: str, minutes: int,):
         # Combine inputs into a single string
         input_text = f"days={days}, goal={goal}, train={train} experience={experience} minutes={minutes}"
         # Run the agent using Runner.run
