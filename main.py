@@ -50,7 +50,7 @@ async def run_agent(data: Input):
     Receives frontend input and returns multiple structured workout plans.
     """
     try:
-        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes, n=3)
+        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes)
         return results
     except Exception as e:
         return {"error": str(e)}
