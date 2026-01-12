@@ -15,4 +15,4 @@ class WorkoutCoach:
         input_text = f"days={days}, goal={goal}, train={train} experience={experience} minutes={minutes}"
         # Run the agent using Runner.run
         result = await Runner.run(WorkoutPlanAgent, input_text)
-        return result.final_output  # This will be a PlanOutput object
+        return result.final_output 

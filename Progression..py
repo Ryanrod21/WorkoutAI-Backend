@@ -45,5 +45,5 @@ WorkoutProgressionAgent = Agent(
     name="WorkoutProgressionAgent",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
-    output_type=WorkoutPlansResponse,  # ✅ same as base agent
+    output_type=WorkoutPlansResponse, 
 )
