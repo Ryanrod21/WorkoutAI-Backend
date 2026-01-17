@@ -2,9 +2,9 @@ from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel
-from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse
+from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 
 
 load_dotenv()
@@ -52,6 +52,38 @@ async def run_agent(data: Input):
     try:
         results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes)
         return results
+    except Exception as e:
+        return {"error": str(e)}
+
+
+class ProgressionInput(BaseModel):
+    user_id: int
+
+    # Structured answers (easy for the agent to reason with)
+    difficulty: Optional[str] = None
+    soreness: Optional[str] = None
+    completed: Optional[str] = None
+    progression: Optional[str] = None
+
+    # Free text (still useful!)
+    feedback: Optional[str] = None
+
+
+progression_agent = ProgressionCoach()
+
+@app.post("/progression", response_model=List[dict])
+async def run_progression_agent(data: ProgressionInput):
+    try:
+        # No DB, just use the frontend-provided data
+        next_week = await progression_agent.run(
+            previous_week=data.previous_week,
+            feedback=data.feedback,
+            goals_update=data.goals_update
+        )
+
+        # Return next week to frontend
+        return next_week
+
     except Exception as e:
         return {"error": str(e)}
 

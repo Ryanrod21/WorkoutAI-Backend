@@ -1,5 +1,6 @@
 from agents import Agent
-from WorkoutCoach import WorkoutPlansResponse  # <- reuse the same classes
+from ExerciseBuilder import WorkoutPlansResponse
+from typing import Optional
 
 INSTRUCTIONS = (
     "You are a Workout Progression agent.\n"
@@ -39,11 +40,21 @@ INSTRUCTIONS = (
     "- Strength Builder\n"
     "- Athletic Performance\n"
     "- Endurance Elite\n"
+    "You will give feedback base one the user response on their past workout\n"
+    "You will not repeat anything\n"
+    "You can give a BRIEF explanation on why it change\n"
+    "PROGRESSION_NOTES:\n"
+    "EXAMPLE: You mention the workout was easy for and you didn't get sore and wnat to increase the sets, reps, intesity. \n"
+    "here are some ways I change this next weeks workout."
 )
+
+class ProgressedWorkoutPlansResponse(WorkoutPlansResponse):
+    progression_notes: Optional[str] = None  # new field for explanation
 
 WorkoutProgressionAgent = Agent(
     name="WorkoutProgressionAgent",
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
-    output_type=WorkoutPlansResponse, 
+    output_type=ProgressedWorkoutPlansResponse, 
 )
+
