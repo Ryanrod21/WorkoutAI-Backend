@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from typing import List, Optional
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
+from uuid import UUID
 
 
 load_dotenv()
@@ -57,7 +58,10 @@ async def run_agent(data: Input):
 
 
 class ProgressionInput(BaseModel):
-    user_id: int
+    user_id: UUID
+
+    # The previous week’s workout plan
+    previous_plan: dict          # JSON from frontend
 
     # Structured answers (easy for the agent to reason with)
     difficulty: Optional[str] = None
@@ -71,17 +75,23 @@ class ProgressionInput(BaseModel):
 
 progression_agent = ProgressionCoach()
 
-@app.post("/progression", response_model=List[dict])
+@app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # No DB, just use the frontend-provided data
+        # 1️⃣ Get previous plan from frontend
+        previous_week = data.previous_plan
+
+        # 2️⃣ Call the AI agent
         next_week = await progression_agent.run(
-            previous_week=data.previous_week,
-            feedback=data.feedback,
-            goals_update=data.goals_update
+            previous_week=previous_week,
+            difficulty=data.difficulty,
+            soreness=data.soreness,
+            completed=data.completed,
+            progression=data.progression,
+            feedback=data.feedback
         )
 
-        # Return next week to frontend
+        # 3️⃣ Return the next week plan
         return next_week
 
     except Exception as e:
