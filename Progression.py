@@ -1,6 +1,7 @@
 from agents import Agent
 from ExerciseBuilder import WorkoutPlansResponse
 from typing import Optional
+from GuardrailAgent import workout_scope_guardrail
 
 INSTRUCTIONS = (
     "You are a Workout Progression agent.\n"
@@ -56,5 +57,6 @@ WorkoutProgressionAgent = Agent(
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
     output_type=ProgressedWorkoutPlansResponse, 
+     input_guardrails=[workout_scope_guardrail]
 )
 

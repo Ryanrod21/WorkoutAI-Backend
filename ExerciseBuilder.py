@@ -24,6 +24,15 @@ INSTRUCTIONS = (
     '- Athletic Performance\n'
     '- Endurance Elite\n'
     '\n'
+    'Notes should clearly explain proper form and movement for the exercise.\n'
+    'Include at least one cue for correct execution and one common mistake to avoid for injury prevention.\n'
+    'Notes must be written in 2-4 sentences and stay under 60 words total.\n'
+    'Keep the explanation clear, practical, and easy to understand.\n'
+    'Notes: example\n' 
+    'Start with the dumbbells at your sides and curl one arm by bending only the elbow while keeping your upper arm still.\n'
+    'Lower the weight slowly under control before switching arms.\n'
+    'Do not swing the weights or use your shoulders—keep tension on the biceps throughout.\n'
+    '\n'
     'Each week should have four points on what to expect during the week of workout. \n'
     'Each point should be short a short sentence. \n'
     'Each expect should appear ONCE per a plan \n'
@@ -61,7 +70,7 @@ INSTRUCTIONS = (
 class Exercise(BaseModel):
     name: str = Field(description="Name of the exercise")
     reps_sets: str = Field(description="Reps and sets for the exercise")
-    notes: str = Field(description="Additional notes or tips on how to do the exercise")
+    notes: str = Field(description="Explaining how to do the workout from form and motion")
 
 class Day(BaseModel):
     day: str = Field(description="Day label (e.g. Day 1, Monday)")

@@ -28,12 +28,6 @@ app.add_middleware(
 def home():
     return {"message": "AI Gym Coach API running!"}
 
-# @app.get("/workout")
-# async def generate_workout(query: str):
-#     # Call your GymManager here
-    
-#     return {"workout": f"Generated plan for: {query}"}
-
 
 class Input(BaseModel):
     days: int
