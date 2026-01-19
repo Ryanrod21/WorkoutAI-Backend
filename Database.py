@@ -1,15 +1,17 @@
 from supabase import create_client
 import os
+from uuid import UUID
 
-# Initialize Supabase client
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def update_preferences(user_id, prefs):
+def update_preferences(user_id: UUID, prefs):
     """
-    Update user preferences: days, goal, train, experience, minutes
+    Update user preferences in the gym table.
+    prefs is expected to be a WorkoutPreference-like object
     """
     supabase.table("gym").upsert({
         "user_id": str(user_id),
@@ -21,21 +23,44 @@ def update_preferences(user_id, prefs):
     }, on_conflict=["user_id"]).execute()
 
 
-def update_plans(user_id, new_plans):
+def get_next_week_number(user_id: UUID) -> int:
     """
-    Replace the existing 3 plans for a user with the new ones.
+    Fetch last saved week for this user and return next week number
     """
-    supabase.table("gym").update({
-        "plans": new_plans  # store as JSON array
-    }).eq("user_id", str(user_id)).execute()
+    result = supabase.table("gym") \
+        .select("week") \
+        .eq("user_id", str(user_id)) \
+        .order("week", desc=True) \
+        .limit(1) \
+        .execute()
+    
+    last_week = result.data[0]["week"] if result.data else 0
+    return last_week + 1
 
 
-def upsert_progression(user_id, progression_data):
+def upsert_plans(user_id: UUID, new_plans: list):
     """
-    Insert or update progression answers for a specific week.
+    Insert or update 3 new plans for a user for the next week.
+    Returns the week number used.
+    """
+    week = get_next_week_number(user_id)
+
+    supabase.table("gym").upsert({
+        "user_id": str(user_id),
+        "week": week,
+        "plans": new_plans  # JSON array of plans
+    }, on_conflict=["user_id", "week"]).execute()
+
+    return week
+
+
+def upsert_progression(user_id: UUID, week: int, progression_data: dict):
+    """
+    Insert or update progression answers for a specific week
     """
     supabase.table("progression").upsert({
         "user_id": str(user_id),
+        "week": week,
         "difficulty": progression_data.get("difficulty"),
         "soreness": progression_data.get("soreness"),
         "completed": progression_data.get("completed"),

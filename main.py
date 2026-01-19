@@ -7,7 +7,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from uuid import UUID
-from Database import update_preferences, update_plans, upsert_progression
+from Database import update_preferences, upsert_plans, upsert_progression
 
 
 load_dotenv()
@@ -105,8 +105,8 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback
         )
 
-        # 4️⃣ Update the existing 3 plans in Supabase
-        update_plans(data.user_id, next_week_plans)
+        # 4️⃣ Upsert the existing 3 plans in Supabase
+        upsert_plans(data.user_id, next_week_plans)
 
         # 5️⃣ Return the new plans
         return next_week_plans
