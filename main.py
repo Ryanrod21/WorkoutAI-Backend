@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
 from dotenv import load_dotenv
 from typing import List, Optional
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from uuid import UUID
+from Database import update_preferences, update_plans, upsert_progression
 
 
 load_dotenv()
@@ -78,17 +80,24 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # 1️⃣ Get previous plan from frontend
-        previous_week = data.previous_plan
+        # 1️⃣ Update user preferences if they changed anything
+        update_preferences(data.user_id, data.preference)
 
-        # 2️⃣ Call the AI agent
-        next_week = await progression_agent.run(
-            data.days, 
-            data.goal, 
-            data.train, 
-            data.experience, 
-            data.minutes,
-            previous_week=previous_week,
+        # 2️⃣ Save progression answers for this week
+        upsert_progression(
+            user_id=data.user_id,
+            progression_data={
+                "difficulty": data.difficulty,
+                "soreness": data.soreness,
+                "completed": data.completed,
+                "progression": data.progression,
+                "feedback": data.feedback
+            }
+        )
+
+        # 3️⃣ Run AI agent to generate next week's plans
+        next_week_plans = await progression_agent.run(
+            previous_week=data.previous_plan,
             difficulty=data.difficulty,
             soreness=data.soreness,
             completed=data.completed,
@@ -96,11 +105,18 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback
         )
 
-        # 3️⃣ Return the next week plan
-        return next_week
+        # 4️⃣ Update the existing 3 plans in Supabase
+        update_plans(data.user_id, next_week_plans)
+
+        # 5️⃣ Return the new plans
+        return next_week_plans
 
     except Exception as e:
-        return {"error": str(e)}
+        # Optionally raise HTTPException for FastAPI consistency
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 if __name__ == "__main__":
     import uvicorn
