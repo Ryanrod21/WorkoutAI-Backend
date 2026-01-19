@@ -83,6 +83,11 @@ async def run_progression_agent(data: ProgressionInput):
 
         # 2️⃣ Call the AI agent
         next_week = await progression_agent.run(
+            data.days, 
+            data.goal, 
+            data.train, 
+            data.experience, 
+            data.minutes,
             previous_week=previous_week,
             difficulty=data.difficulty,
             soreness=data.soreness,
