@@ -49,6 +49,9 @@ async def run_agent(data: Input):
         return results
     except Exception as e:
         return {"error": str(e)}
+    
+class WorkoutPreference(Input):
+    pass
 
 
 class ProgressionInput(BaseModel):
@@ -56,6 +59,9 @@ class ProgressionInput(BaseModel):
 
     # The previous week’s workout plan
     previous_plan: dict          # JSON from frontend
+
+    # Input Class Passed
+    preference: WorkoutPreference
 
     # Structured answers (easy for the agent to reason with)
     difficulty: Optional[str] = None
