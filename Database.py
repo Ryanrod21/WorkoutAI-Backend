@@ -8,6 +8,8 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+#Tasdfasd 
+
 def update_preferences(user_id: UUID, prefs):
     """
     Update user preferences in the gym table.
