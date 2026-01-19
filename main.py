@@ -37,6 +37,7 @@ class Input(BaseModel):
     train: str
     experience: str
     minutes: int
+    week: int = 1
 
 # Instantiate the coach
 coach = WorkoutCoach()
@@ -47,7 +48,7 @@ async def run_agent(data: Input):
     Receives frontend input and returns multiple structured workout plans.
     """
     try:
-        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes)
+        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes, data.week)
         return results
     except Exception as e:
         return {"error": str(e)}
@@ -70,6 +71,7 @@ class ProgressionInput(BaseModel):
     soreness: Optional[str] = None
     completed: Optional[str] = None
     progression: Optional[str] = None
+    day_status: bool
 
     # Free text (still useful!)
     feedback: Optional[str] = None
@@ -91,7 +93,8 @@ async def run_progression_agent(data: ProgressionInput):
                 "soreness": data.soreness,
                 "completed": data.completed,
                 "progression": data.progression,
-                "feedback": data.feedback
+                "feedback": data.feedback,
+                "day_status": data.day_status
             }
         )
 
@@ -102,7 +105,8 @@ async def run_progression_agent(data: ProgressionInput):
             soreness=data.soreness,
             completed=data.completed,
             progression=data.progression,
-            feedback=data.feedback
+            feedback=data.feedback,
+            day_status=data.day_status
         )
 
         # 4️⃣ Upsert the existing 3 plans in Supabase

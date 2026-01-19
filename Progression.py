@@ -14,6 +14,7 @@ INSTRUCTIONS = (
     "- Each day MUST contain exactly 4 exercises.\n"
     "- Progress intelligently using strength & conditioning principles.\n"
     "\n"
+    "You will get a bool results for each day that was completed.\n"
     "USER RESULTS may include:\n"
     "- difficulty (too easy | good | too hard)\n"
     "- soreness (low | medium | high)\n"

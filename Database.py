@@ -8,7 +8,7 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-#Tasdfasd 
+
 
 def update_preferences(user_id: UUID, prefs):
     """
@@ -60,9 +60,10 @@ def upsert_progression(user_id: UUID, week: int, progression_data: dict):
     """
     Insert or update progression answers for a specific week
     """
-    supabase.table("progression").upsert({
+    supabase.table("gym").upsert({
         "user_id": str(user_id),
         "week": week,
+        "day_status": progression_data.get('day_status'),
         "difficulty": progression_data.get("difficulty"),
         "soreness": progression_data.get("soreness"),
         "completed": progression_data.get("completed"),
