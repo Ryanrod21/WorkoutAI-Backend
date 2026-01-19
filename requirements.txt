@@ -1,5 +1,6 @@
 openai
 openai-agents
+supabase
 gradio
 python-dotenv
 fastapi
