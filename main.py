@@ -34,7 +34,7 @@ def home():
 class Input(BaseModel):
     days: int
     goal: str
-    train: str
+    location: str
     experience: str
     minutes: int
     week: int = 1
@@ -48,7 +48,7 @@ async def run_agent(data: Input):
     Receives frontend input and returns multiple structured workout plans.
     """
     try:
-        results = await coach.run(data.days, data.goal, data.train, data.experience, data.minutes, data.week)
+        results = await coach.run(data.days, data.goal, data.location, data.experience, data.minutes, data.week)
         return results
     except Exception as e:
         return {"error": str(e)}
