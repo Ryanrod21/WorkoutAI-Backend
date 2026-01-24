@@ -13,14 +13,36 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def update_preferences(user_id: UUID, prefs):
     supabase.table("gym").upsert({
         "user_id": str(user_id),
-        "week": 1,  # or the latest week if you prefer
+        "week": 1,
         "days": prefs.days,
         "goal": prefs.goal,
         "location": prefs.location,
         "experience": prefs.experience,
         "minutes": prefs.minutes
-    }, on_conflict="user_week_unique").execute()
+    }, on_conflict=["user_id", "week"]).execute()
 
+
+def upsert_plans(user_id: UUID, new_plans: list):
+    week = get_next_week_number(user_id)
+    supabase.table("gym").upsert({
+        "user_id": str(user_id),
+        "week": week,
+        "plans": new_plans
+    }, on_conflict=["user_id", "week"]).execute()
+    return week
+
+
+def upsert_progression(user_id: UUID, week: int, progression_data: dict):
+    supabase.table("gym").upsert({
+        "user_id": str(user_id),
+        "week": week,
+        "day_status": progression_data.get("day_status"),
+        "difficulty": progression_data.get("difficulty"),
+        "soreness": progression_data.get("soreness"),
+        "completed": progression_data.get("completed"),
+        "progression": progression_data.get("progression"),
+        "feedback": progression_data.get("feedback"),
+    }, on_conflict=["user_id", "week"]).execute()
 
 
 def get_next_week_number(user_id: UUID) -> int:
@@ -37,26 +59,3 @@ def get_next_week_number(user_id: UUID) -> int:
     last_week = result.data[0]["week"] if result.data else 0
     return last_week + 1
 
-
-def upsert_plans(user_id: UUID, new_plans: list):
-    week = get_next_week_number(user_id)
-    supabase.table("gym").upsert({
-        "user_id": str(user_id),
-        "week": week,
-        "plans": new_plans
-    }, on_conflict="user_week_unique").execute()
-    return week
-
-
-
-def upsert_progression(user_id: UUID, week: int, progression_data: dict):
-    supabase.table("gym").upsert({
-    "user_id": str(user_id),
-    "week": week,
-    "day_status": progression_data.get("day_status"),
-    "difficulty": progression_data.get("difficulty"),
-    "soreness": progression_data.get("soreness"),
-    "completed": progression_data.get("completed"),
-    "progression": progression_data.get("progression"),
-    "feedback": progression_data.get("feedback"),
-}, on_conflict="user_week_unique").execute()
