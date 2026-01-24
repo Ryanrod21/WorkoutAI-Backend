@@ -19,7 +19,7 @@ def update_preferences(user_id: UUID, prefs):
         "user_id": str(user_id),
         "days": prefs.days,
         "goal": prefs.goal,
-        "train": prefs.train,
+        "location": prefs.location,
         "experience": prefs.experience,
         "minutes": prefs.minutes
     }, on_conflict=["user_id"]).execute()
