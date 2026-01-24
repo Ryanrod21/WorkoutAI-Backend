@@ -69,4 +69,6 @@ def upsert_progression(user_id: UUID, week: int, progression_data: dict):
         "completed": progression_data.get("completed"),
         "progression": progression_data.get("progression"),
         "feedback": progression_data.get("feedback")
-    }, on_conflict=["user_id", "week"]).execute()
+    },
+
+      on_conflict=["user_id,week"]).execute()
