@@ -19,7 +19,7 @@ def update_preferences(user_id: UUID, prefs):
         "location": prefs.location,
         "experience": prefs.experience,
         "minutes": prefs.minutes
-    }, on_conflict=["user_id","week"]).execute()
+    }, on_conflict="user_week_unique").execute()
 
 
 
@@ -44,7 +44,7 @@ def upsert_plans(user_id: UUID, new_plans: list):
         "user_id": str(user_id),
         "week": week,
         "plans": new_plans
-    }, on_conflict=["user_id", "week"]).execute()
+    }, on_conflict="user_week_unique").execute()
     return week
 
 
