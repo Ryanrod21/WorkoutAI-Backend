@@ -85,6 +85,9 @@ async def run_progression_agent(data: ProgressionInput):
         # determine current week (fall back to 1)
         week = data.previous_plan.get("week", 1) if isinstance(data.previous_plan, dict) else 1
 
+        update_preferences(user_id=data.user_id, prefs=data.preference)
+
+
         # save progression answers for this week
         upsert_progression(
             user_id=data.user_id,
