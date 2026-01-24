@@ -95,7 +95,6 @@ async def run_progression_agent(data: ProgressionInput):
                 "completed": data.completed,
                 "progression": data.progression,
                 "feedback": data.feedback,
-                "day_status": data.day_status,
             },
         )
 
