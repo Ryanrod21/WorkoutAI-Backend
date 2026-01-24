@@ -23,7 +23,7 @@ class ProgressionCoach:
         self,
         previous_week,
         feedback=None,
-        goals_update=None,
+        day_status=None,
         difficulty=None,
         soreness=None,
         completed=None,
@@ -32,7 +32,7 @@ class ProgressionCoach:
             self.plan_search(
                 previous_week,
                 feedback,
-                goals_update,
+                day_status,
                 difficulty,
                 soreness,
                 completed,
@@ -46,7 +46,7 @@ class ProgressionCoach:
         self,
         previous_week,
         feedback=None,
-        goals_update=None,
+        day_status=None,
         difficulty=None,
         soreness=None,
         completed=None,
@@ -55,7 +55,7 @@ class ProgressionCoach:
         input_text = (
             f"previous_week={previous_week}, "
             f"feedback={feedback}, "
-            f"goals_update={goals_update}, "
+            f"day_status={day_status}, "
             f"difficulty={difficulty}, "
             f"soreness={soreness}, "
             f"completed={completed}, "
