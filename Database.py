@@ -57,18 +57,21 @@ def upsert_plans(user_id: UUID, new_plans: list):
 
 
 def upsert_progression(user_id: UUID, week: int, progression_data: dict):
-    """
-    Insert or update progression answers for a specific week
-    """
+    # normalize completed to text if your column expects text; adjust if DB expects boolean
+    completed = progression_data.get("completed")
+    if isinstance(completed, bool):
+        completed = "completed" if completed else "not completed"
+
     supabase.table("gym").upsert(
-    {
-        "user_id": str(user_id),
-        "week": week,
-        "day_status": progression_data.get("day_status"),
-        "difficulty": progression_data.get("difficulty"),
-        "soreness": progression_data.get("soreness"),
-        "completed": progression_data.get("completed"),
-        "progression": progression_data.get("progression"),
-        "feedback": progression_data.get("feedback"),
-    },
-    on_conflict=["user_id", "week"]).execute()
+        {
+            "user_id": str(user_id),
+            "week": week,
+            "day_status": progression_data.get("day_status"),
+            "difficulty": progression_data.get("difficulty"),
+            "soreness": progression_data.get("soreness"),
+            "completed": progression_data.get("completed"),                  # keep or remove depending on schema
+            "progression": progression_data.get("progression"),
+            "feedback": progression_data.get("feedback"),
+        },
+        on_conflict="user_id,week"  # OR use the constraint name: on_conflict="gym_user_week_unique"
+    ).execute()
