@@ -18,7 +18,7 @@ def update_preferences(user_id: UUID, prefs):
         "location": prefs.location,
         "experience": prefs.experience,
         "minutes": prefs.minutes
-    }, on_conflict=["user_id", "week"]).execute()
+    }, on_conflict="gym_user_week_unique").execute()
 
 
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
@@ -47,5 +47,5 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
         "user_id": user_id_str,
         "week": week,
         **new_data
-    }, on_conflict=["user_id", "week"]).execute()
+    }, on_conflict="gym_user_week_unique").execute()
 
