@@ -82,23 +82,24 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # 1️⃣ Update user preferences if they changed anything
-        update_preferences(data.user_id, data.preference)
+        # determine current week (fall back to 1)
+        week = data.previous_plan.get("week", 1) if isinstance(data.previous_plan, dict) else 1
 
-        # 2️⃣ Save progression answers for this week
+        # save progression answers for this week
         upsert_progression(
             user_id=data.user_id,
+            week=week,
             progression_data={
                 "difficulty": data.difficulty,
                 "soreness": data.soreness,
                 "completed": data.completed,
                 "progression": data.progression,
                 "feedback": data.feedback,
-                "day_status": data.day_status
-            }
+                "day_status": data.day_status,
+            },
         )
 
-        # 3️⃣ Run AI agent to generate next week's plans
+        # generate next week's plans
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -106,19 +107,19 @@ async def run_progression_agent(data: ProgressionInput):
             completed=data.completed,
             progression=data.progression,
             feedback=data.feedback,
-            day_status=data.day_status
+            day_status=data.day_status,
         )
 
-        # 4️⃣ Upsert the existing 3 plans in Supabase
+        # upsert the generated plans to DB
         upsert_plans(data.user_id, next_week_plans)
 
-        # 5️⃣ Return the new plans
         return next_week_plans
 
     except Exception as e:
-        # Optionally raise HTTPException for FastAPI consistency
+        import logging
+        logging.exception("Progression agent error")
+        from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 
