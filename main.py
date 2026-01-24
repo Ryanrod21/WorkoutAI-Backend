@@ -1,13 +1,12 @@
 from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import HTTPException
 from dotenv import load_dotenv
 from typing import List, Optional
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from uuid import UUID
-from Database import update_preferences, upsert_plans, upsert_progression
+from Database import update_preferences, archive_and_update_gym
 
 
 load_dotenv()
@@ -82,26 +81,26 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # determine current week (fall back to 1)
         week = data.previous_plan.get("week", 1) if isinstance(data.previous_plan, dict) else 1
 
+        # Update preferences normally
         update_preferences(user_id=data.user_id, prefs=data.preference)
 
-
-        # save progression answers for this week
-        upsert_progression(
+        # Archive old gym row and update gym with new progression
+        archive_and_update_gym(
             user_id=data.user_id,
             week=week,
-            progression_data={
+            new_data={
+                "day_status": data.day_status,
                 "difficulty": data.difficulty,
                 "soreness": data.soreness,
                 "completed": data.completed,
                 "progression": data.progression,
-                "feedback": data.feedback,
-            },
+                "feedback": data.feedback
+            }
         )
 
-        # generate next week's plans
+        # Generate next week's plans
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -112,8 +111,12 @@ async def run_progression_agent(data: ProgressionInput):
             day_status=data.day_status,
         )
 
-        # upsert the generated plans to DB
-        upsert_plans(data.user_id, next_week_plans)
+        # Save new plans for next week
+        archive_and_update_gym(
+            user_id=data.user_id,
+            week=week + 1,
+            new_data={"plans": next_week_plans}
+        )
 
         return next_week_plans
 
@@ -122,6 +125,7 @@ async def run_progression_agent(data: ProgressionInput):
         logging.exception("Progression agent error")
         from fastapi import HTTPException
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 

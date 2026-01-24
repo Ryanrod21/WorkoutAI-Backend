@@ -1,7 +1,7 @@
 from supabase import create_client
 import os
 from uuid import UUID
-
+from datetime import datetime
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -22,40 +22,26 @@ def update_preferences(user_id: UUID, prefs):
     }, on_conflict=["user_id", "week"]).execute()
 
 
-def upsert_plans(user_id: UUID, new_plans: list):
-    week = get_next_week_number(user_id)
-    supabase.table("gym").upsert({
-        "user_id": str(user_id),
-        "week": week,
-        "plans": new_plans
-    }, on_conflict=["user_id", "week"]).execute()
-    return week
-
-
-def upsert_progression(user_id: UUID, week: int, progression_data: dict):
-    supabase.table("gym").upsert({
-        "user_id": str(user_id),
-        "week": week,
-        "day_status": progression_data.get("day_status"),
-        "difficulty": progression_data.get("difficulty"),
-        "soreness": progression_data.get("soreness"),
-        "completed": progression_data.get("completed"),
-        "progression": progression_data.get("progression"),
-        "feedback": progression_data.get("feedback"),
-    }, on_conflict=["user_id", "week"]).execute()
-
-
-def get_next_week_number(user_id: UUID) -> int:
+def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
     """
-    Fetch last saved week for this user and return next week number
+    Archives the old gym row for user/week into gym_history,
+    then updates (or inserts) the gym table with new_data.
     """
-    result = supabase.table("gym") \
-        .select("week") \
-        .eq("user_id", str(user_id)) \
-        .order("week", desc=True) \
-        .limit(1) \
-        .execute()
+    # 1️⃣ Fetch current row
+    current = supabase.table("gym").select("*")\
+        .eq("user_id", str(user_id))\
+        .eq("week", week).execute().data
     
-    last_week = result.data[0]["week"] if result.data else 0
-    return last_week + 1
+    if current:
+        old_row = current[0].copy()
+        old_row["archived_at"] = datetime.utcnow().isoformat()
 
+        # 2️⃣ Insert old row into history
+        supabase.table("gym_history").insert(old_row).execute()
+
+    # 3️⃣ Upsert new data into gym
+    supabase.table("gym").upsert({
+        "user_id": str(user_id),
+        "week": week,
+        **new_data
+    }, on_conflict=["user_id", "week"]).execute()
