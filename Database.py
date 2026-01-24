@@ -13,7 +13,6 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def update_preferences(user_id: UUID, prefs):
     supabase.table("gym").upsert({
         "user_id": str(user_id),
-        "week": 1,
         "days": prefs.days,
         "goal": prefs.goal,
         "location": prefs.location,
@@ -23,25 +22,30 @@ def update_preferences(user_id: UUID, prefs):
 
 
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
-    """
-    Archives the old gym row for user/week into gym_history,
-    then updates (or inserts) the gym table with new_data.
-    """
-    # 1️⃣ Fetch current row
-    current = supabase.table("gym").select("*")\
-        .eq("user_id", str(user_id))\
-        .eq("week", week).execute().data
-    
-    if current:
-        old_row = current[0].copy()
-        old_row["archived_at"] = datetime.utcnow().isoformat()
+    # Convert UUID to string
+    user_id_str = str(user_id)
 
-        # 2️⃣ Insert old row into history
+    # 1️⃣ Remove any accidental duplicates first
+    all_rows = supabase.table("gym").select("*")\
+        .eq("user_id", user_id_str)\
+        .eq("week", week).execute().data
+    if len(all_rows) > 1:
+        # Keep only the first, archive the rest
+        for row in all_rows[1:]:
+            row["archived_at"] = datetime.utcnow().isoformat()
+            supabase.table("gym_history").insert(row).execute()
+            supabase.table("gym").delete().eq("id", row["id"]).execute()
+
+    # 2️⃣ Archive the current row if exists
+    if all_rows:
+        old_row = all_rows[0].copy()
+        old_row["archived_at"] = datetime.utcnow().isoformat()
         supabase.table("gym_history").insert(old_row).execute()
 
-    # 3️⃣ Upsert new data into gym
+    # 3️⃣ Upsert new data
     supabase.table("gym").upsert({
-        "user_id": str(user_id),
+        "user_id": user_id_str,
         "week": week,
         **new_data
     }, on_conflict=["user_id", "week"]).execute()
+

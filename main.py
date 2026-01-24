@@ -83,10 +83,7 @@ async def run_progression_agent(data: ProgressionInput):
     try:
         week = data.previous_plan.get("week", 1) if isinstance(data.previous_plan, dict) else 1
 
-        # Update preferences normally
-        update_preferences(user_id=data.user_id, prefs=data.preference)
-
-        # Archive old gym row and update gym with new progression
+        # Archive & update current week progression
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
