@@ -60,15 +60,15 @@ def upsert_progression(user_id: UUID, week: int, progression_data: dict):
     """
     Insert or update progression answers for a specific week
     """
-    supabase.table("gym").upsert({
+    supabase.table("gym").upsert(
+    {
         "user_id": str(user_id),
         "week": week,
-        "day_status": progression_data.get('day_status'),
+        "day_status": progression_data.get("day_status"),
         "difficulty": progression_data.get("difficulty"),
         "soreness": progression_data.get("soreness"),
         "completed": progression_data.get("completed"),
         "progression": progression_data.get("progression"),
-        "feedback": progression_data.get("feedback")
+        "feedback": progression_data.get("feedback"),
     },
-
-      on_conflict=["user_id,week"]).execute()
+    on_conflict="user_id,week").execute()
