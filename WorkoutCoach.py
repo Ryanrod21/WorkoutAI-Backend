@@ -19,15 +19,7 @@ class WorkoutCoach:
         return result.final_output 
 
 class ProgressionCoach:
-    async def run(
-        self,
-        previous_week,
-        feedback=None,
-        day_status=None,
-        difficulty=None,
-        soreness=None,
-        completed=None,
-        progression=None,):
+    async def run(self, previous_week, feedback=None, day_status=None, difficulty=None, soreness=None ,completed=None, progression=None,):
         tasks = [
             self.plan_search(
                 previous_week,
@@ -42,16 +34,7 @@ class ProgressionCoach:
         results = await asyncio.gather(*tasks)
         return results
 
-    async def plan_search(
-        self,
-        previous_week,
-        feedback=None,
-        day_status=None,
-        difficulty=None,
-        soreness=None,
-        completed=None,
-        progression=None,
-    ):
+    async def plan_search(self, previous_week, feedback=None, day_status=None, difficulty=None, soreness=None ,completed=None, progression=None,):
         input_text = (
             f"previous_week={previous_week}, "
             f"feedback={feedback}, "

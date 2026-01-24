@@ -91,7 +91,6 @@ async def run_progression_agent(data: ProgressionInput):
             user_id=data.user_id,
             week=week,
             new_data={
-                "day_status": data.day_status,
                 "difficulty": data.difficulty,
                 "soreness": data.soreness,
                 "completed": data.completed,
@@ -108,7 +107,6 @@ async def run_progression_agent(data: ProgressionInput):
             completed=data.completed,
             progression=data.progression,
             feedback=data.feedback,
-            day_status=data.day_status,
         )
 
         # Save new plans for next week
