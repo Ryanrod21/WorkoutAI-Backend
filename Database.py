@@ -3,7 +3,7 @@ import os
 from uuid import UUID
 from datetime import datetime
 from dotenv import load_dotenv
-from main import Input
+
 
 load_dotenv()
 
@@ -14,7 +14,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 
-def update_preferences(user_id: UUID, prefs: Input):
+def update_preferences(user_id: UUID, prefs):
     """
     Upsert the user's gym preferences for week 1
     """
