@@ -4,7 +4,6 @@ from uuid import UUID
 from datetime import datetime
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -12,34 +11,51 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-
-
 def update_preferences(user_id: UUID, prefs):
     """
-    Upsert the user's gym preferences for week 1
+    Upsert the user's gym preferences for week 1.
+    Handles update vs insert manually, avoiding duplicate key errors.
     """
-    supabase.table("gym").upsert(
-        {
-            "user_id": str(user_id),
-            "week": 1,
-            "days": prefs.days,
-            "goal": prefs.goal,
-            "location": prefs.location,
-            "experience": prefs.experience,
-            "minutes": prefs.minutes
-        },
-        on_conflict=["user_id", "week"]
-    ).execute()
+    user_id_str = str(user_id)
+
+    # Check if row exists for week 1
+    current = supabase.table("gym").select("*")\
+        .eq("user_id", user_id_str)\
+        .eq("week", 1)\
+        .execute().data
+
+    data_to_save = {
+        "days": prefs.days,
+        "goal": prefs.goal,
+        "location": prefs.location,
+        "experience": prefs.experience,
+        "minutes": prefs.minutes,
+        "week": 1,
+        "user_id": user_id_str
+    }
+
+    if current:
+        # Update existing row
+        supabase.table("gym").update(data_to_save)\
+            .eq("user_id", user_id_str)\
+            .eq("week", 1)\
+            .execute()
+    else:
+        # Insert new row
+        supabase.table("gym").insert(data_to_save).execute()
+
 
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
     """
     Archives the old gym row for user/week into gym_history,
     then updates (or inserts) the gym table with new_data safely.
     """
+    user_id_str = str(user_id)
+
     # 1️⃣ Fetch current row for this week
     current = supabase.table("gym")\
         .select("*")\
-        .eq("user_id", user_id)\
+        .eq("user_id", user_id_str)\
         .eq("week", week)\
         .execute().data
 
@@ -52,14 +68,13 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
 
         # 3️⃣ Update existing row
         supabase.table("gym").update(new_data)\
-            .eq("user_id", user_id)\
+            .eq("user_id", user_id_str)\
             .eq("week", week)\
             .execute()
     else:
-        # Insert new row if none exists
+        # 4️⃣ Insert new row if none exists
         supabase.table("gym").insert({
-            "user_id": user_id,
+            "user_id": user_id_str,
             "week": week,
             **new_data
         }).execute()
-

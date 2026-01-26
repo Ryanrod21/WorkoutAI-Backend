@@ -87,7 +87,13 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
+        # 1️⃣ Update the user's questionnaire/preferences first
+        update_preferences(user_id=data.user_id, prefs=data.preference)
+
+        # 2️⃣ Determine the current week from previous plan
         week = data.previous_plan.get("week", 1)
+
+        # 3️⃣ Archive current week progress and update with answers
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
@@ -100,6 +106,7 @@ async def run_progression_agent(data: ProgressionInput):
             }
         )
 
+        # 4️⃣ Generate next week's plans
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -109,6 +116,7 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback,
         )
 
+        # 5️⃣ Save next week's plans
         archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
@@ -119,8 +127,8 @@ async def run_progression_agent(data: ProgressionInput):
 
     except Exception as e:
         import traceback
-        traceback.print_exc()  # Log full error to server
-        raise HTTPException(status_code=500, detail=str(e))  # Return to Postman
+        traceback.print_exc()  # Logs full error to server
+        raise HTTPException(status_code=500, detail=str(e))  # Return error to client
 
 
 
