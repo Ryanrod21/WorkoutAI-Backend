@@ -83,9 +83,13 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
+        # Use previous week from the plan
         week = data.previous_plan.get("week", 1) if isinstance(data.previous_plan, dict) else 1
 
-        # Archive & update current week progression
+        # 🔹 Save user preferences for week 1
+        update_preferences(data.user_id, data.preference)
+
+        # 🔹 Archive & update current week progression
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
@@ -98,7 +102,7 @@ async def run_progression_agent(data: ProgressionInput):
             }
         )
 
-        # Generate next week's plans
+        # 🔹 Generate next week's plans
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -108,7 +112,7 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback,
         )
 
-        # Save new plans for next week
+        # 🔹 Save new plans for next week
         archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
@@ -118,10 +122,8 @@ async def run_progression_agent(data: ProgressionInput):
         return next_week_plans
 
     except Exception as e:
-        import logging
-        logging.exception("Progression agent error")
-        from fastapi import HTTPException
-        raise HTTPException(status_code=500, detail=str(e))
+        print("Error in /progress:", e)
+        raise
 
 
 
