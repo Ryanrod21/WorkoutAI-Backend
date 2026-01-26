@@ -113,11 +113,14 @@ async def run_progression_agent(data: ProgressionInput):
         )
         logging.info(f"Next week plans generated: {next_week_plans}")
 
-        archive_and_update_gym(
+        if next_week_plans:
+            archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
-            new_data={"plans": next_week_plans}
-        )
+            new_data={"plans": next_week_plans})
+        else:
+            logging.warning("Skipping Supabase update because next_week_plans is empty")
+
 
         return next_week_plans
     except Exception as e:
