@@ -25,7 +25,7 @@ def update_preferences(user_id: UUID, prefs):
         "experience": prefs.experience,
         "minutes": prefs.minutes
     },
-    on_conflict="gym_user_week_unique").execute()
+    on_conflict=["user_id", "week"]).execute()
 
 
 
