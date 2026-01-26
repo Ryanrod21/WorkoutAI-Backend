@@ -34,14 +34,12 @@ def update_preferences(user_id: UUID, prefs):
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
     """
     Archives the old gym row for user/week into gym_history,
-    then upserts new_data into the gym table.
+    then updates (or inserts) the gym table with new_data safely.
     """
-    user_id_str = str(user_id)
-
     # 1️⃣ Fetch current row for this week
     current = supabase.table("gym")\
         .select("*")\
-        .eq("user_id", user_id_str)\
+        .eq("user_id", user_id)\
         .eq("week", week)\
         .execute().data
 
@@ -52,13 +50,16 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
         # 2️⃣ Insert old row into history
         supabase.table("gym_history").insert(old_row).execute()
 
-    # 3️⃣ Upsert new data into gym
-    supabase.table("gym").upsert(
-        {
-            "user_id": user_id_str,
+        # 3️⃣ Update existing row
+        supabase.table("gym").update(new_data)\
+            .eq("user_id", user_id)\
+            .eq("week", week)\
+            .execute()
+    else:
+        # Insert new row if none exists
+        supabase.table("gym").insert({
+            "user_id": user_id,
             "week": week,
             **new_data
-        },
-        on_conflict=["user_id", "week"]  # Must match UNIQUE columns
-    ).execute()
+        }).execute()
 
