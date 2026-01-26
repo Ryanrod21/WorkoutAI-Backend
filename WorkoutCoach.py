@@ -17,32 +17,13 @@ class WorkoutCoach:
 
 
 class ProgressionCoach:
-    async def run(self, previous_week, feedback=None, day_status=None, difficulty=None, soreness=None ,completed=None, progression=None,):
-        tasks = [
-            self.plan_search(
-                previous_week,
-                feedback,
-                day_status,
-                difficulty,
-                soreness,
-                completed,
-                progression,
-            )
-        ]
-        results = await asyncio.gather(*tasks)
-        return results
-
-    async def plan_search(self, previous_week, feedback=None, day_status=None, difficulty=None, soreness=None ,completed=None, progression=None,):
-        input_text = (
-            f"previous_week={previous_week}, "
-            f"feedback={feedback}, "
-            f"day_status={day_status}, "
-            f"difficulty={difficulty}, "
-            f"soreness={soreness}, "
-            f"completed={completed}, "
-            f"progression={progression}"
-        )
-
-        result = await Runner.run(WorkoutProgressionAgent, input_text)
-        return result.final_output
+    async def run(self, previous_week, difficulty=None, soreness=None, completed=None, progression=None, feedback=None):
+        import logging
+        logging.info(f"Received previous_week: {previous_week}")
+        if "plans" not in previous_week or not previous_week["plans"]:
+            logging.warning("No plans found, returning empty list")
+            return []
+        # generate dummy next week plans for testing
+        next_week_plans = [{"plan_summary": "Test Plan", "category": "Strength Builder", "expect": ["Exercise A"]}]
+        return next_week_plans
 
