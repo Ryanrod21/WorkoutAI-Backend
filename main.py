@@ -10,6 +10,8 @@ from uuid import UUID
 from Database import update_preferences, archive_and_update_gym
 
 
+
+
 load_dotenv()
 
 app = FastAPI()
