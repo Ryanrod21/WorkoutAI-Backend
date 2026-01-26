@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from uuid import UUID
 from Database import update_preferences, archive_and_update_gym
-
+import traceback
 
 
 
@@ -124,8 +124,9 @@ async def run_progression_agent(data: ProgressionInput):
         return next_week_plans
 
     except Exception as e:
-        print("Error in /progress:", e)
-        raise
+        traceback.print_exc()  # log the full stack trace
+        return {"error": str(e)}
+
 
 
 
