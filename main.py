@@ -86,47 +86,18 @@ progression_agent = ProgressionCoach()
 
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
-    try:
-        week = data.previous_plan.get("week", 1)
-        logging.info(f"Previous plan week: {week}")
-        
-        archive_and_update_gym(
-            user_id=data.user_id,
-            week=week,
-            new_data={
-                "difficulty": data.difficulty,
-                "soreness": data.soreness,
-                "completed": data.completed,
-                "progression": data.progression,
-                "feedback": data.feedback
-            }
-        )
-        logging.info("Archived current week successfully")
-
-        next_week_plans = await progression_agent.run(
-            previous_week=data.previous_plan,
-            difficulty=data.difficulty,
-            soreness=data.soreness,
-            completed=data.completed,
-            progression=data.progression,
-            feedback=data.feedback,
-        )
-        logging.info(f"Next week plans generated: {next_week_plans}")
-
-        if next_week_plans:
-            archive_and_update_gym(
-            user_id=data.user_id,
-            week=week + 1,
-            new_data={"plans": next_week_plans})
-        else:
-            logging.warning("Skipping Supabase update because next_week_plans is empty")
-
-
-        return next_week_plans
-    except Exception as e:
-        logging.error(f"Error in /progress: {e}")
-        traceback.print_exc()
-        return []
+    # 🔥 TEMPORARY HARD RETURN
+    return [
+        {
+            "plan_summary": "Week 2 Test Plan",
+            "category": "Endurance Elite",
+            "expect": [
+                "Increase intensity",
+                "Add 5–10 minutes cardio",
+                "Maintain consistency"
+            ]
+        }
+    ]
 
 
 
