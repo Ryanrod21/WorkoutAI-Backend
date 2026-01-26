@@ -5,18 +5,16 @@ from Progression import WorkoutProgressionAgent
 from agents import Runner  # Runner is needed to execute the agent
 
 class WorkoutCoach:
-    async def run(self, days: int, goal: str, location: str, experience: str, minutes: int):
-        # Run n tasks in parallel
-        tasks = [self.plan_search(days, goal, location, experience, minutes)]
+    async def run(self, days: int, goal: str, location: str, experience: str, minutes: int, week: int = 1):
+        tasks = [self.plan_search(days, goal, location, experience, minutes, week)]
         results = await asyncio.gather(*tasks)
         return results
 
-    async def plan_search(self, days: int, goal: str, location: str, experience: str, minutes: int,) -> WorkoutPlansResponse:
-        # Combine inputs into a single string
-        input_text = f"days={days}, goal={goal}, location={location} experience={experience} minutes={minutes}"
-        # Run the agent using Runner.run
+    async def plan_search(self, days: int, goal: str, location: str, experience: str, minutes: int, week: int) -> WorkoutPlansResponse:
+        input_text = f"week={week}, days={days}, goal={goal}, location={location}, experience={experience}, minutes={minutes}"
         result = await Runner.run(WorkoutPlanAgent, input_text)
-        return result.final_output 
+        return result.final_output
+
 
 class ProgressionCoach:
     async def run(self, previous_week, feedback=None, day_status=None, difficulty=None, soreness=None ,completed=None, progression=None,):
