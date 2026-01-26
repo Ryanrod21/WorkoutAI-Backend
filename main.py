@@ -9,6 +9,7 @@ from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from uuid import UUID
 from Database import update_preferences, archive_and_update_gym
 import traceback
+import logging
 
 
 
@@ -82,10 +83,13 @@ class ProgressionInput(BaseModel):
 
 progression_agent = ProgressionCoach()
 
+
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
         week = data.previous_plan.get("week", 1)
+        logging.info(f"Previous plan week: {week}")
+        
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
@@ -97,6 +101,8 @@ async def run_progression_agent(data: ProgressionInput):
                 "feedback": data.feedback
             }
         )
+        logging.info("Archived current week successfully")
+
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -105,16 +111,18 @@ async def run_progression_agent(data: ProgressionInput):
             progression=data.progression,
             feedback=data.feedback,
         )
+        logging.info(f"Next week plans generated: {next_week_plans}")
+
         archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
             new_data={"plans": next_week_plans}
         )
-        return next_week_plans  # ✅ Must be a list
+
+        return next_week_plans
     except Exception as e:
-        import traceback
+        logging.error(f"Error in /progress: {e}")
         traceback.print_exc()
-        # Return an empty list or partial list instead of dict
         return []
 
 
