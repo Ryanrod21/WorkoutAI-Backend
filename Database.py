@@ -12,37 +12,18 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def update_preferences(user_id: UUID, prefs):
-    """
-    Upsert the user's gym preferences for week 1.
-    Handles update vs insert manually, avoiding duplicate key errors.
-    """
-    user_id_str = str(user_id)
-
-    # Check if row exists for week 1
-    current = supabase.table("gym").select("*")\
-        .eq("user_id", user_id_str)\
-        .eq("week", 1)\
-        .execute().data
-
-    data_to_save = {
-        "days": prefs.days,
-        "goal": prefs.goal,
-        "location": prefs.location,
-        "experience": prefs.experience,
-        "minutes": prefs.minutes,
-        "week": 1,
-        "user_id": user_id_str
-    }
-
-    if current:
-        # Update existing row
-        supabase.table("gym").update(data_to_save)\
-            .eq("user_id", user_id_str)\
-            .eq("week", 1)\
-            .execute()
-    else:
-        # Insert new row
-        supabase.table("gym").insert(data_to_save).execute()
+    supabase.table("gym").upsert(
+        {
+            "user_id": str(user_id),
+            "week": 1,
+            "days": prefs.days,
+            "goal": prefs.goal,
+            "location": prefs.location,
+            "experience": prefs.experience,
+            "minutes": prefs.minutes
+        },
+        on_conflict=["user_id", "week"]
+    ).execute()
 
 
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
