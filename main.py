@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi import HTTPException
 from dotenv import load_dotenv
 from typing import List, Optional
 from pydantic import BaseModel
@@ -41,16 +42,17 @@ class Input(BaseModel):
 # Instantiate the coach
 coach = WorkoutCoach()
 
+
+
 @app.post("/agent", response_model=List[WorkoutPlansResponse])
 async def run_agent(data: Input):
-    """
-    Receives frontend input and returns multiple structured workout plans.
-    """
     try:
-        results = await coach.run(data.days, data.goal, data.location, data.experience, data.minutes, data.week)
+        results = await coach.run(
+            data.days, data.goal, data.location, data.experience, data.minutes, data.week
+        )
         return results
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
     
 class WorkoutPreference(Input):
     pass
