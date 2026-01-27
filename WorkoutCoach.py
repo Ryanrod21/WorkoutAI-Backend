@@ -17,13 +17,43 @@ class WorkoutCoach:
 
 
 class ProgressionCoach:
-    async def run(self, previous_week, difficulty=None, soreness=None, completed=None, progression=None, feedback=None):
+    async def run(
+        self,
+        previous_week: dict,
+        difficulty=None,
+        soreness=None,
+        completed=None,
+        progression=None,
+        feedback=None
+    ):
         import logging
-        logging.info(f"Received previous_week: {previous_week}")
-        if "plans" not in previous_week or not previous_week["plans"]:
-            logging.warning("No plans found, returning empty list")
+        logging.info(f"Progressing plan: {previous_week}")
+
+        # ✅ Validate input
+        if not isinstance(previous_week, dict):
+            logging.error("previous_week must be a dict")
             return []
-        # generate dummy next week plans for testing
-        next_week_plans = [{"plan_summary": "Test Plan", "category": "Strength Builder", "expect": ["Exercise A"]}]
-        return next_week_plans
+
+        if "plan_summary" not in previous_week:
+            logging.error("Missing plan_summary in previous_week")
+            return []
+
+        # ✅ Build next week's plan based on previous
+        next_plan = {
+            "week": previous_week.get("week", 1) + 1,
+            "category": previous_week.get("category"),
+            "plan_summary": previous_week["plan_summary"],
+            "expect": list(previous_week.get("expect", [])),
+            "days": previous_week.get("days"),
+            "adjustments": {
+                "difficulty": difficulty,
+                "soreness": soreness,
+                "completed": completed,
+                "progression": progression,
+                "feedback": feedback,
+            }
+        }
+
+        return [next_plan]
+
 
