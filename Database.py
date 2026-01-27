@@ -55,10 +55,11 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
         supabase.table("gym_history").insert(old_row).execute()
 
     # Upsert new data
-        supabase.table("gym").upsert(
+    supabase.table("gym").upsert(
         {
-        "user_id": str(user_id),
-        "week": week,
-        **new_data
+            "user_id": user_id_str,
+            "week": week,
+            **new_data
         },
-        on_conflict="week").execute()
+        on_conflict="week"
+    ).execute()
