@@ -8,10 +8,14 @@ load_dotenv()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 def update_preferences(user_id: UUID, prefs):
+    """
+    Upsert questionnaire answers for WEEK 1
+    """
     supabase.table("gym").upsert(
         {
             "user_id": str(user_id),
@@ -28,34 +32,34 @@ def update_preferences(user_id: UUID, prefs):
 
 def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
     """
-    Archives the old gym row for user/week into gym_history,
-    then updates (or inserts) the gym table with new_data safely.
+    Archive current row (if exists) then upsert new data
     """
     user_id_str = str(user_id)
 
-    # 1️⃣ Fetch current row for this week
-    current = supabase.table("gym")\
-        .select("*")\
-        .eq("user_id", user_id_str)\
-        .eq("week", week)\
-        .execute().data
+    # Fetch existing row
+    current = (
+        supabase.table("gym")
+        .select("*")
+        .eq("user_id", user_id_str)
+        .eq("week", week)
+        .execute()
+        .data
+    )
 
+    # Archive if exists
     if current:
         old_row = current[0].copy()
+        old_row.pop("id", None)  # ⚠️ IMPORTANT
         old_row["archived_at"] = datetime.utcnow().isoformat()
 
-        # 2️⃣ Insert old row into history
         supabase.table("gym_history").insert(old_row).execute()
 
-        # 3️⃣ Update existing row
-        supabase.table("gym").update(new_data)\
-            .eq("user_id", user_id_str)\
-            .eq("week", week)\
-            .execute()
-    else:
-        # 4️⃣ Insert new row if none exists
-        supabase.table("gym").insert({
+    # Upsert new data
+    supabase.table("gym").upsert(
+        {
             "user_id": user_id_str,
             "week": week,
             **new_data
-        }).execute()
+        },
+        on_conflict=["user_id", "week"]
+    ).execute()

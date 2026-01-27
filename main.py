@@ -87,13 +87,10 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # 1️⃣ Update the user's questionnaire/preferences first
-        update_preferences(user_id=data.user_id, prefs=data.preference)
-
-        # 2️⃣ Determine the current week from previous plan
+        # Always derive week from previous_plan
         week = data.previous_plan.get("week", 1)
 
-        # 3️⃣ Archive current week progress and update with answers
+        # Save progression answers for CURRENT week
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
@@ -102,11 +99,12 @@ async def run_progression_agent(data: ProgressionInput):
                 "soreness": data.soreness,
                 "completed": data.completed,
                 "progression": data.progression,
-                "feedback": data.feedback
+                "feedback": data.feedback,
+                "day_status": data.day_status,
             }
         )
 
-        # 4️⃣ Generate next week's plans
+        # Generate next week
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -116,19 +114,22 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback,
         )
 
-        # 5️⃣ Save next week's plans
+        # Save NEXT week plan
         archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
-            new_data={"plans": next_week_plans}
+            new_data={
+                "plans": next_week_plans,
+                "week": week + 1
+            }
         )
 
         return next_week_plans
 
     except Exception as e:
         import traceback
-        traceback.print_exc()  # Logs full error to server
-        raise HTTPException(status_code=500, detail=str(e))  # Return error to client
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
