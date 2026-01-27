@@ -3,7 +3,6 @@ from typing import List
 from ExerciseBuilder import WorkoutPlanAgent, WorkoutPlansResponse
 from Progression import WorkoutProgressionAgent
 from agents import Runner  # Runner is needed to execute the agent
-import logging
 
 class WorkoutCoach:
     async def run(self, days: int, goal: str, location: str, experience: str, minutes: int, week: int = 1):
@@ -19,27 +18,42 @@ class WorkoutCoach:
 
 class ProgressionCoach:
     async def run(
-        self, previous_week, difficulty=None, soreness=None, completed=None, progression=None, feedback=None
+        self,
+        previous_week: dict,
+        difficulty=None,
+        soreness=None,
+        completed=None,
+        progression=None,
+        feedback=None
     ):
-        logging.info(f"Received previous_week: {previous_week}")  # <- log input
+        import logging
+        logging.info(f"Progressing plan: {previous_week}")
 
-        plans = previous_week.get("plans")
-        if not plans:
-            logging.warning("No plans found in previous_week")
+        # ✅ Validate input
+        if not isinstance(previous_week, dict):
+            logging.error("previous_week must be a dict")
             return []
 
-        logging.info(f"Plans found: {plans}")  # <- log plans array
+        if "plan_summary" not in previous_week:
+            logging.error("Missing plan_summary in previous_week")
+            return []
 
-        # Generate the next week's plans
-        next_week_plans = []
-        for day in plans:
-            next_week_plans.append({
-                "plan_summary": f"Next week plan for {day.get('day', 'Day')}",
-                "category": previous_week.get("category", "General"),
-                "expect": ["Follow progression", "Maintain consistency"]
-            })
+        # ✅ Build next week's plan based on previous
+        next_plan = {
+            "week": previous_week.get("week", 1) + 1,
+            "category": previous_week.get("category"),
+            "plan_summary": previous_week["plan_summary"],
+            "expect": list(previous_week.get("expect", [])),
+            "days": previous_week.get("days"),
+            "adjustments": {
+                "difficulty": difficulty,
+                "soreness": soreness,
+                "completed": completed,
+                "progression": progression,
+                "feedback": feedback,
+            }
+        }
 
-        logging.info(f"Next week plans generated: {next_week_plans}")  # <- log output
-        return next_week_plans
+        return [next_plan]
 
 
