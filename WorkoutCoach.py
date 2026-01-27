@@ -27,16 +27,13 @@ class ProgressionCoach:
         completed=None,
         progression=None,
         feedback=None,
+        week: int = None,
     ):
         """
-        Entry point for progressing a workout plan.
-        Mirrors WorkoutCoach.run():
-        - Creates async tasks
-        - Gathers results
-        - Returns the final output
+        Entry point for progressing a workout plan using an AI agent.
+        Mirrors WorkoutCoach.run().
         """
 
-        # Create async task for generating the next week's plan
         tasks = [
             self.plan_search(
                 previous_week,
@@ -44,13 +41,12 @@ class ProgressionCoach:
                 soreness,
                 completed,
                 progression,
-                feedback
+                feedback,
+                week
             )
         ]
 
-        # Run all tasks concurrently (scales well if more tasks are added later)
         results = await asyncio.gather(*tasks)
-
         return results
 
     async def plan_search(
@@ -61,54 +57,36 @@ class ProgressionCoach:
         completed=None,
         progression=None,
         feedback=None,
+        week: int = None,
     ):
         """
-        Core logic for generating the next week's workout plan.
-        Uses the previous week's plan and user feedback to build progression.
+        Sends previous week's plan + feedback to the agent.
+        Agent is responsible for generating 3 workout plans.
         """
 
-        # Log incoming plan for debugging and traceability
-        logging.info(f"Progressing plan: {previous_week}")
+        logging.info("Running ProgressionAgent")
 
-        # ✅ Validate that previous_week is the correct type
+        # ✅ Validate input
         if not isinstance(previous_week, dict):
             logging.error("previous_week must be a dict")
             return []
 
-        # ✅ Ensure required data exists
-        if "plan_summary" not in previous_week:
-            logging.error("Missing plan_summary in previous_week")
-            return []
+        # Determine next week number
+        next_week = week or previous_week.get("week", 1) + 1
 
-        # ✅ Construct the next week's plan
-        next_plan = {
-            # Increment week number (default to week 1 if missing)
-            "week": previous_week.get("week", 1) + 1,
+        # 🧠 Build agent input (THIS is what the agent sees)
+        input_text = f"""
+        next_week={next_week}
+        previous_week={previous_week}
+        difficulty={difficulty}
+        soreness={soreness}
+        completed={completed}
+        progression={progression}
+        feedback={feedback}
+        """
 
-            # Carry over plan category (e.g. strength, hypertrophy, conditioning)
-            "category": previous_week.get("category"),
+        # 🔥 Run the agent (this is what enables 3 workouts)
+        result = await Runner.run(WorkoutProgressionAgent, input_text)
 
-            # Keep the original plan summary as the base template
-            "plan_summary": previous_week["plan_summary"],
-
-            # Copy expectations to avoid mutating original data
-            "expect": list(previous_week.get("expect", [])),
-
-            # Preserve number of training days
-            "days": previous_week.get("days"),
-
-            # Store user feedback and progression signals
-            "adjustments": {
-                "difficulty": difficulty,     # How hard the plan felt
-                "soreness": soreness,         # Muscle soreness level
-                "completed": completed,       # % or boolean completion
-                "progression": progression,   # Strength/endurance progress
-                "feedback": feedback,         # Free-form user notes
-            }
-        }
-
-        # Return the next plan (single item, gathered by run())
-        return next_plan
- 
-
-
+        # Agent should return a LIST of 3 workout plans
+        return result.final_output
