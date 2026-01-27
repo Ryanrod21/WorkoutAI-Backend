@@ -119,8 +119,7 @@ async def run_progression_agent(data: ProgressionInput):
             user_id=data.user_id,
             week=week + 1,
             new_data={
-                "plans": next_week_plans,
-                "week": week + 1
+                "plans": next_week_plans
             }
         )
 
