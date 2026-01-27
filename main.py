@@ -87,10 +87,9 @@ progression_agent = ProgressionCoach()
 @app.post("/progress", response_model=List[WorkoutPlansResponse])
 async def run_progression_agent(data: ProgressionInput):
     try:
-        # Always derive week from previous_plan
         week = data.previous_plan.get("week", 1)
 
-        # Save progression answers for CURRENT week
+        # Archive previous week (optional)
         archive_and_update_gym(
             user_id=data.user_id,
             week=week,
@@ -99,12 +98,10 @@ async def run_progression_agent(data: ProgressionInput):
                 "soreness": data.soreness,
                 "completed": data.completed,
                 "progression": data.progression,
-                "feedback": data.feedback,
-                "day_status": data.day_status,
+                "feedback": data.feedback
             }
         )
 
-        # Generate next week
         next_week_plans = await progression_agent.run(
             previous_week=data.previous_plan,
             difficulty=data.difficulty,
@@ -114,21 +111,21 @@ async def run_progression_agent(data: ProgressionInput):
             feedback=data.feedback,
         )
 
-        # Save NEXT week plan
+        # Save next week plans
         archive_and_update_gym(
             user_id=data.user_id,
             week=week + 1,
-            new_data={
-                "plans": next_week_plans
-            }
+            new_data={"plans": next_week_plans}
         )
 
-        return next_week_plans
+        logging.info(f"Returning next_week_plans: {next_week_plans}")
+        return next_week_plans  # Must be a list
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
 
 
 
