@@ -92,7 +92,7 @@ async def progress(payload: ProgressionPayload):
         print("📥 PAYLOAD RECEIVED:")
         print(payload.model_dump())
 
-        result = await coach.run(
+        result = await progression_agent.run(
             user_id=payload.user_id,
             previous_plan=payload.previous_plan,
             preference=payload.preference,
