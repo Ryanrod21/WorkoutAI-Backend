@@ -83,6 +83,7 @@ async def progress(payload: ProgressionPayload):
             completed=payload.completed,
             progression=payload.progression,
             feedback=payload.feedback,
+            preference=payload.preference,
         )
 
         # 2️⃣ Increment week BEFORE saving
@@ -112,9 +113,8 @@ async def progress(payload: ProgressionPayload):
         # 5️⃣ Return response
         return {
             "user_id": payload.user_id,
-            "week": next_week,
-            "plans": plans,
-        }
+            "plans": plans.dict()  # <-- convert Pydantic object to dict
+}
 
     except Exception as e:
         import traceback
