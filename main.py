@@ -67,15 +67,22 @@ class ProgressionPayload(BaseModel):
     feedback: str
     day_status: Dict[str, bool]  
 
+class ProgressResponse(BaseModel):
+    plans: ProgressedWorkoutPlansResponse  # nested Pydantic model
+
 
 progression_agent = ProgressionCoach()
 
 
-@app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
+from fastapi.encoders import jsonable_encoder
+
+class ProgressResponse(BaseModel):
+    plans: ProgressedWorkoutPlansResponse  # keep this, assumes it's correct structure
+
+@app.post("/progress", response_model=ProgressResponse)
 async def progress(payload: ProgressionPayload):
     try:
-        # 1️⃣ Run the progression agent using the previous week's plan
-
+        # 1️⃣ Run the progression agent
         plans = await progression_agent.run(
             previous_week=payload.previous_plan,
             difficulty=payload.difficulty,
@@ -91,7 +98,7 @@ async def progress(payload: ProgressionPayload):
         next_week = current_week + 1
         payload.preference["week"] = next_week
 
-        # 3️⃣ Prepare new data to save
+        # 3️⃣ Prepare new data to save (convert plans to dict for Supabase)
         new_data = {
             "days": payload.preference.get("days"),
             "goal": payload.preference.get("goal"),
@@ -104,17 +111,14 @@ async def progress(payload: ProgressionPayload):
             "progression": payload.progression,
             "feedback": payload.feedback,
             "day_status": payload.day_status,
-            "plans": plans,  # save the generated plans
+            "plans": jsonable_encoder(plans),  # ✅ convert to JSON-serializable
         }
 
         # 4️⃣ Archive current week and save new week
         archive_and_update_gym(UUID(payload.user_id), next_week, new_data)
 
-        # 5️⃣ Return response
-        return {
-            "user_id": payload.user_id,
-            "plans": plans.dict()  # <-- convert Pydantic object to dict
-}
+        # 5️⃣ Return response (FastAPI handles Pydantic serialization)
+        return ProgressResponse(plans=plans)
 
     except Exception as e:
         import traceback
