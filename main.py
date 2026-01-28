@@ -89,32 +89,28 @@ progression_agent = ProgressionCoach()
 @app.post("/progress")
 async def progress(payload: ProgressionPayload):
     try:
-        print("📥 PAYLOAD RECEIVED:")
-        print(payload.model_dump())
+        progression_coach = ProgressionCoach()
 
-        result = await progression_agent.run(
-            user_id=payload.user_id,
-            previous_plan=payload.previous_plan,
-            preference=payload.preference,
+        plans = await progression_coach.run(
+            previous_week=payload.previous_plan,
             difficulty=payload.difficulty,
             soreness=payload.soreness,
             completed=payload.completed,
             progression=payload.progression,
             feedback=payload.feedback,
-            day_status=payload.day_status,
         )
 
-        return result
+        # user_id belongs HERE
+        return {
+            "user_id": payload.user_id,
+            "plans": plans
+        }
 
     except Exception as e:
-        print("🔥 BACKEND CRASH 🔥")
+        import traceback
         traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
-        # IMPORTANT: return JSON so CORS headers still apply
-        raise HTTPException(
-            status_code=500,
-            detail=str(e),
-        )
 
 
 
