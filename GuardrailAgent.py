@@ -56,34 +56,32 @@ guardrail_agent = Agent(
 @input_guardrail
 async def workout_scope_guardrail(ctx, agent, message):
     """
-    Guardrail that allows both new workouts and progression inputs.
+    Guardrail that allows workout-related structured requests
+    without sending them to the LLM.
     """
 
-    # Try to parse message as JSON to detect type
-    try:
-        msg_data = json.loads(message)
-        request_type = msg_data.get("type", "")
-    except Exception:
-        # If not JSON, fallback to original agent check
-        request_type = ""
+    # --- STEP 1: Try to parse JSON safely ---
+    msg_data = None
 
-    # ✅ Allow progression requests explicitly
-    if request_type == "workout_progression":
-        logging.info("Guardrail allowed workout progression input")
-        return GuardrailFunctionOutput(
-            output_info={"reason": "Workout progression detected, allowed"},
-            tripwire_triggered=False,
-        )
+    if isinstance(message, dict):
+        msg_data = message
+    elif isinstance(message, str):
+        try:
+            msg_data = json.loads(message)
+        except Exception:
+            msg_data = None
 
-    # ✅ Allow normal workout_generation requests
-    if request_type == "workout_generation":
-        logging.info("Guardrail allowed new workout generation")
-        return GuardrailFunctionOutput(
-            output_info={"reason": "New workout detected, allowed"},
-            tripwire_triggered=False,
-        )
+    # --- STEP 2: Auto-allow known internal request types ---
+    if isinstance(msg_data, dict):
+        request_type = msg_data.get("type")
 
-    # Otherwise, fallback to the agent's normal check
+        if request_type in {"workout_generation", "workout_progression"}:
+            return GuardrailFunctionOutput(
+                output_info={"reason": "Internal workout request"},
+                tripwire_triggered=False,
+            )
+
+    # --- STEP 3: Fall back to LLM guardrail ---
     result = await Runner.run(
         guardrail_agent,
         message,
