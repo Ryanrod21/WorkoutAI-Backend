@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from agents import Agent
-from GuardrailAgent import workout_scope_guardrail
+
 
 INSTRUCTIONS = (
     "You are a Workout Plan Generator agent.\n"
@@ -94,5 +94,4 @@ WorkoutPlanAgent = Agent(
     instructions=INSTRUCTIONS,
     model="gpt-4o-mini",
     output_type=WorkoutPlansResponse,
-    input_guardrails=[workout_scope_guardrail]
 )
