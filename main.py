@@ -45,7 +45,7 @@ coach = WorkoutCoach()
 
 
 
-@app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
+@app.post("/agent", response_model=List[WorkoutPlansResponse])
 async def run_agent(data: Input):
     try:
         results = await coach.run(
