@@ -1,3 +1,4 @@
+from click import UUID
 from fastapi import FastAPI
 import os
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,24 +8,13 @@ from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from Database import update_preferences, archive_and_update_gym
-import traceback
+from Progression import ProgressedWorkoutPlansResponse
 
 
 
 load_dotenv()
 
 app = FastAPI()
-
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=[
-#         "http://localhost:5173",
-#         "https://gymai-u2km.onrender.com"
-#     ],
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
 
 
 app.add_middleware(
@@ -35,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ROUTES AFTER THIS
 
 
 @app.get("/")
@@ -66,12 +55,8 @@ async def run_agent(data: Input):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-class WorkoutPreference(Input):
-    pass
-
 
 class ProgressionPayload(BaseModel):
-    type: str
     user_id: str
     previous_plan: Dict[str, Any]
     preference: Dict[str, Any]
@@ -89,9 +74,9 @@ progression_agent = ProgressionCoach()
 @app.post("/progress")
 async def progress(payload: ProgressionPayload):
     try:
-        progression_coach = ProgressionCoach()
+        # 1️⃣ Run the progression agent using the previous week's plan
 
-        plans = await progression_coach.run(
+        plans = await progression_agent.run(
             previous_week=payload.previous_plan,
             difficulty=payload.difficulty,
             soreness=payload.soreness,
@@ -100,10 +85,35 @@ async def progress(payload: ProgressionPayload):
             feedback=payload.feedback,
         )
 
-        # user_id belongs HERE
+        # 2️⃣ Increment week BEFORE saving
+        current_week = payload.preference.get("week", 1)
+        next_week = current_week + 1
+        payload.preference["week"] = next_week
+
+        # 3️⃣ Prepare new data to save
+        new_data = {
+            "days": payload.preference.get("days"),
+            "goal": payload.preference.get("goal"),
+            "location": payload.preference.get("location"),
+            "experience": payload.preference.get("experience"),
+            "minutes": payload.preference.get("minutes"),
+            "difficulty": payload.difficulty,
+            "soreness": payload.soreness,
+            "completed": payload.completed,
+            "progression": payload.progression,
+            "feedback": payload.feedback,
+            "day_status": payload.day_status,
+            "plans": plans,  # save the generated plans
+        }
+
+        # 4️⃣ Archive current week and save new week
+        archive_and_update_gym(UUID(payload.user_id), next_week, new_data)
+
+        # 5️⃣ Return response
         return {
             "user_id": payload.user_id,
-            "plans": plans
+            "week": next_week,
+            "plans": plans,
         }
 
     except Exception as e:
