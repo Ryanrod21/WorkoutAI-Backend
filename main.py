@@ -71,7 +71,7 @@ class ProgressionPayload(BaseModel):
 progression_agent = ProgressionCoach()
 
 
-@app.post("/progress")
+@app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
 async def progress(payload: ProgressionPayload):
     try:
         # 1️⃣ Run the progression agent using the previous week's plan
