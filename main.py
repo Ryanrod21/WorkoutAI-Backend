@@ -7,6 +7,7 @@ from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
 from Database import update_preferences, archive_and_update_gym
+import traceback
 
 
 
@@ -25,13 +26,16 @@ app = FastAPI()
 #     allow_headers=["*"],
 # )
 
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or your frontend URL
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ROUTES AFTER THIS
 
 
 @app.get("/")
@@ -83,18 +87,34 @@ progression_agent = ProgressionCoach()
 
 
 @app.post("/progress")
-async def handle_progress(payload: ProgressionPayload):
-    # payload is now a Python dict, not a string
-    result = await ProgressionCoach().run(
-        previous_week=payload.previous_plan,
-        difficulty=payload.difficulty,
-        soreness=payload.soreness,
-        completed=payload.completed,
-        progression=payload.progression,
-        feedback=payload.feedback,
-    )
-    return {"plans": result}
+async def progress(payload: ProgressionPayload):
+    try:
+        print("📥 PAYLOAD RECEIVED:")
+        print(payload.model_dump())
 
+        result = await coach.run(
+            user_id=payload.user_id,
+            previous_plan=payload.previous_plan,
+            preference=payload.preference,
+            difficulty=payload.difficulty,
+            soreness=payload.soreness,
+            completed=payload.completed,
+            progression=payload.progression,
+            feedback=payload.feedback,
+            day_status=payload.day_status,
+        )
+
+        return result
+
+    except Exception as e:
+        print("🔥 BACKEND CRASH 🔥")
+        traceback.print_exc()
+
+        # IMPORTANT: return JSON so CORS headers still apply
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
 
 
 
