@@ -76,7 +76,7 @@ class ProgressionPayload(BaseModel):
     completed: bool
     progression: str
     feedback: str
-    day_status: Dict[str, Any]
+    day_status: Dict[str, bool]  
 
 
 progression_agent = ProgressionCoach()
