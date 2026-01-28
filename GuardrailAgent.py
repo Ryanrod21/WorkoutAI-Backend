@@ -55,39 +55,30 @@ guardrail_agent = Agent(
 
 @input_guardrail
 async def workout_scope_guardrail(ctx, agent, message):
-    """
-    Guardrail that allows workout-related structured requests
-    without sending them to the LLM.
-    """
-
-    # --- STEP 1: Try to parse JSON safely ---
-    msg_data = None
-
+    # If message is a dict (like from FastAPI), read type directly
     if isinstance(message, dict):
-        msg_data = message
-    elif isinstance(message, str):
-        try:
-            msg_data = json.loads(message)
-        except Exception:
-            msg_data = None
-
-    # --- STEP 2: Auto-allow known internal request types ---
-    if isinstance(msg_data, dict):
-        request_type = msg_data.get("type")
-
+        request_type = message.get("type")
         if request_type in {"workout_generation", "workout_progression"}:
             return GuardrailFunctionOutput(
-                output_info={"reason": "Internal workout request"},
+                output_info={"reason": "Internal workout request allowed"},
                 tripwire_triggered=False,
             )
 
-    # --- STEP 3: Fall back to LLM guardrail ---
-    result = await Runner.run(
-        guardrail_agent,
-        message,
-        context=ctx.context,
-    )
+    # If message is a string, try parsing JSON
+    elif isinstance(message, str):
+        try:
+            msg_data = json.loads(message)
+            request_type = msg_data.get("type")
+            if request_type in {"workout_generation", "workout_progression"}:
+                return GuardrailFunctionOutput(
+                    output_info={"reason": "Internal workout request allowed"},
+                    tripwire_triggered=False,
+                )
+        except Exception:
+            pass
 
+    # fallback to LLM for other cases
+    result = await Runner.run(guardrail_agent, message, context=ctx.context)
     return GuardrailFunctionOutput(
         output_info={"reason": result.final_output.reason},
         tripwire_triggered=result.final_output.is_out_of_scope,

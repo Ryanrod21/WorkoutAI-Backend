@@ -3,13 +3,10 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import HTTPException
 from dotenv import load_dotenv
-from typing import List, Optional
+from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
-from uuid import UUID
 from Database import update_preferences, archive_and_update_gym
-import traceback
-import logging
 
 
 
@@ -61,74 +58,34 @@ class WorkoutPreference(Input):
     pass
 
 
-class ProgressionInput(BaseModel):
-    user_id: UUID
-
-    # The previous week’s workout plan
-    previous_plan: dict          # JSON from frontend
-
-    # Input Class Passed
-    preference: WorkoutPreference
-
-    # Structured answers (easy for the agent to reason with)
-    difficulty: Optional[str] = None
-    soreness: Optional[str] = None
-    completed: Optional[str] = None
-    progression: Optional[str] = None
-    day_status: bool
-
-    # Free text (still useful!)
-    feedback: Optional[str] = None
+class ProgressionPayload(BaseModel):
+    type: str
+    user_id: str
+    previous_plan: Dict[str, Any]
+    preference: Dict[str, Any]
+    difficulty: str
+    soreness: str
+    completed: bool
+    progression: str
+    feedback: str
+    day_status: Dict[str, Any]
 
 
 progression_agent = ProgressionCoach()
 
 
-@app.post("/progress", response_model=List[WorkoutPlansResponse])
-async def run_progression_agent(data: ProgressionInput):
-    try:
-        # Always derive week from previous_plan
-        week = data.previous_plan.get("week", 1)
-
-        # Save progression answers for CURRENT week
-        archive_and_update_gym(
-            user_id=data.user_id,
-            week=week,
-            new_data={
-                "difficulty": data.difficulty,
-                "soreness": data.soreness,
-                "completed": data.completed,
-                "progression": data.progression,
-                "feedback": data.feedback,
-                "day_status": data.day_status,
-            }
-        )
-
-        # Generate next week
-        next_week_plans = await progression_agent.run(
-            previous_week=data.previous_plan,
-            difficulty=data.difficulty,
-            soreness=data.soreness,
-            completed=data.completed,
-            progression=data.progression,
-            feedback=data.feedback,
-        )
-
-        # Save NEXT week plan
-        archive_and_update_gym(
-            user_id=data.user_id,
-            week=week + 1,
-            new_data={
-                "plans": next_week_plans
-            }
-        )
-
-        return next_week_plans
-
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/progress")
+async def handle_progress(payload: ProgressionPayload):
+    # payload is now a Python dict, not a string
+    result = await ProgressionCoach().run(
+        previous_week=payload.previous_plan,
+        difficulty=payload.difficulty,
+        soreness=payload.soreness,
+        completed=payload.completed,
+        progression=payload.progression,
+        feedback=payload.feedback,
+    )
+    return {"plans": result}
 
 
 
