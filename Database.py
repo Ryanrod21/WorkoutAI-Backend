@@ -58,6 +58,6 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
             "week": week,
             **new_data
         },
-        on_conflict=["user_id", "week"]  # ⚡ crucial to avoid duplicate key error
+        on_conflict=["week", "user_id"]  # ⚡ crucial to avoid duplicate key error
     ).execute()
 
