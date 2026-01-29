@@ -29,33 +29,41 @@ def update_preferences(user_id: UUID, prefs):
     ).execute()
 
 
-def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
+def archive_and_update_gym(user_id: str, week: int, new_data: dict):
+
+    print("UPDATING GYM → user_id:", user_id, "type:", type(user_id))
+    print("week:", week, "type:", type(week))
+    print("new_data:", new_data)
+
     """
     Archives the old gym row for user/week into gym_history,
     then upserts new_data into the gym table.
     """
-    user_id_str = str(user_id)  # ✅ Convert UUID to string for Supabase
-    week_int = int(week)        # ✅ Ensure week is integer
 
-    # 1️⃣ Fetch current row for this user/week
+      # 1️⃣ Fetch current row for this week
     current = supabase.table("gym")\
         .select("*")\
-        .eq("user_id", user_id_str)\
-        .eq("week", week_int)\
+        .eq("user_id", user_id)\
+        .eq("week", week)\
         .execute().data
 
-    # 2️⃣ Archive old row if exists
+    # 2️⃣ Archive if exists
     if current:
         old_row = current[0].copy()
         old_row["archived_at"] = datetime.utcnow().isoformat()
         supabase.table("gym_history").insert(old_row).execute()
 
-    # 3️⃣ Upsert new data
-    supabase.table("gym").upsert(
-        {
-            "user_id": user_id_str,
-            "week": week_int,
-            **new_data
-        },
-        on_conflict=["week", "user_id"]  # ✅ Must match the unique constraint
-    ).execute()
+        # 3️⃣ Update existing row
+        supabase.table("gym")\
+            .update(new_data)\
+            .eq("user_id", user_id)\
+            .eq("week", week)\
+            .execute()
+    else:
+        # 4️⃣ Insert new row
+        supabase.table("gym")\
+            .insert({
+                "user_id": user_id,
+                "week": week,
+                **new_data
+            }).execute()
