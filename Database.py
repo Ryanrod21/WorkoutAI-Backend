@@ -58,8 +58,9 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
             "user_id": str(user_id),
             "week": week,
             **new_data
-        }
-        ).execute()
+        },
+        on_conflict=["user_id", "week"]).execute()
+
  
 
 
