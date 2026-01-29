@@ -18,7 +18,7 @@ def update_preferences(user_id: UUID, prefs):
     supabase.table("gym").upsert(
         {
             "user_id": str(user_id),
-            "week": 1,  # always week 1 for preferences
+            "week": 1,  
             "days": prefs.days,
             "goal": prefs.goal,
             "location": prefs.location,

@@ -67,8 +67,6 @@ class ProgressionPayload(BaseModel):
     feedback: str
     day_status: Dict[str, bool]  
 
-class ProgressResponse(BaseModel):
-    plans: ProgressedWorkoutPlansResponse  # nested Pydantic model
 
 
 progression_agent = ProgressionCoach()
@@ -76,10 +74,7 @@ progression_agent = ProgressionCoach()
 
 from fastapi.encoders import jsonable_encoder
 
-class ProgressResponse(BaseModel):
-    plans: ProgressedWorkoutPlansResponse  # keep this, assumes it's correct structure
-
-@app.post("/progress", response_model=ProgressResponse)
+@app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
 async def progress(payload: ProgressionPayload):
     try:
         # 1️⃣ Run the progression agent
@@ -118,7 +113,7 @@ async def progress(payload: ProgressionPayload):
         archive_and_update_gym(UUID(payload.user_id), next_week, new_data)
 
         # 5️⃣ Return response (FastAPI handles Pydantic serialization)
-        return ProgressResponse(plans=plans)
+        return plans
 
     except Exception as e:
         import traceback
