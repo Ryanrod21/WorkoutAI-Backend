@@ -55,7 +55,7 @@ def archive_and_update_gym(user_id: str, week: int, new_data: dict):
 
         # 3️⃣ Update existing row
         supabase.table("gym")\
-            .update(new_data)\
+            .update({**new_data, 'selected_plan': None, 'day_status': None })\
             .eq("user_id", user_id)\
             .eq("week", week)\
             .execute()
