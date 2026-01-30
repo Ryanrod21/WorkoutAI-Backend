@@ -62,7 +62,7 @@ class ProgressionPayload(BaseModel):
     preference: Dict[str, Any]
     difficulty: str
     soreness: str
-    completed: bool
+    completed: str
     progression: str
     feedback: str
     day_status: Dict[str, bool]  
