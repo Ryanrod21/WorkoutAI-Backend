@@ -57,7 +57,7 @@ def archive_and_update_gym(user_id: str, week: int, new_data: dict):
         supabase.table("gym")\
             .update({**new_data, 'selected_plan': None})\
             .eq("user_id", user_id)\
-            .eq("week", week)\
+            .eq("week", week + 1)\
             .execute()
     else:
         print("No existing row found for user_id:", user_id, "week:", week)
