@@ -29,7 +29,7 @@ def update_preferences(user_id: UUID, prefs):
     ).execute()
 
 
-def archive_and_update_gym(user_id: str, week: int, new_data: dict):
+def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
 
     print("UPDATING GYM → user_id:", user_id, "type:", type(user_id))
     print("week:", week, "type:", type(week))
