@@ -90,7 +90,7 @@ async def progress(payload: ProgressionPayload):
         )
 
         # 2️⃣ Increment week BEFORE saving
-        current_week = payload.preference.get("week", 1)
+        current_week = payload.preference.get("week")
         next_week = current_week + 1
         payload.preference["week"] = next_week
 
