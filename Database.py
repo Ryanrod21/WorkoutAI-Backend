@@ -29,7 +29,7 @@ def update_preferences(user_id: UUID, prefs):
     ).execute()
 
 
-def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
+def archive_and_update_gym(user_id: str, week: int, new_data: dict):
 
     print("UPDATING GYM → user_id:", user_id, "type:", type(user_id))
     print("week:", week, "type:", type(week))
@@ -47,7 +47,7 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
         .eq("week", week)\
         .execute().data
 
-    # 2️⃣ Archive if exists
+    
     if current:
         old_row = current[0].copy()
         old_row["archived_at"] = datetime.utcnow().isoformat()
@@ -60,10 +60,5 @@ def archive_and_update_gym(user_id: UUID, week: int, new_data: dict):
             .eq("week", week)\
             .execute()
     else:
-        # 4️⃣ Insert new row
-        supabase.table("gym")\
-            .insert({
-                "user_id": user_id,
-                "week": week,
-                **new_data
-            }).execute()
+        print("No existing row found for user_id:", user_id, "week:", week)
+       
