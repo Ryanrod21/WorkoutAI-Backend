@@ -28,6 +28,20 @@ def update_preferences(user_id: UUID, prefs):
         on_conflict=["user_id", "week"]  # matches your unique constraint
     ).execute()
 
+def get_last_week_from_db(user_id: UUID) -> int:
+    """
+    Fetches the last saved week for a given user from the gym table.
+    Returns 0 if no previous week is found.
+    """
+    response = supabase.table("gym").select("week") \
+        .eq("user_id", str(user_id)) \
+        .order("week", desc=True).limit(1).execute()
+
+    data = response.data
+    if data and len(data) > 0:
+        return data[0]["week"]
+    return 0  # no previous week
+
 
 def archive_and_update_gym(user_id: str, next_week: int, new_data: dict):
 

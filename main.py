@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
-from Database import update_preferences, archive_and_update_gym
+from Database import get_last_week_from_db, archive_and_update_gym
 from Progression import ProgressedWorkoutPlansResponse
 
 
@@ -93,8 +93,8 @@ async def progress(payload: ProgressionPayload):
         )
 
         # 2️⃣ Increment week BEFORE saving
-        current_week = payload.preference.get("week")
-        next_week = current_week + 1
+        last_week = get_last_week_from_db(UUID(payload.user_id))
+        next_week = last_week + 1
         
 
         # 3️⃣ Prepare new data to save (convert plans to dict for Supabase)
