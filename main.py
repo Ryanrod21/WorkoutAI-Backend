@@ -81,7 +81,7 @@ async def progress(payload: ProgressionPayload):
             "difficulty": payload.difficulty or 'good',
             "soreness": payload.soreness or 'medium',
             "completed": payload.completed.lower() == "true",
-            "missed_days": sum(1 for status in payload.day_status.values() if not status),
+            "day_status": payload.day_status,
             "preference": payload.preference,
             "feedback": payload.feedback or ""
         }
