@@ -67,5 +67,5 @@ def archive_and_update_gym(user_id: str, next_week: int, new_data: dict):
         .execute()
         
     else:
-        print("No existing row found for user_id:", user_id, "week:", week)
+        print("No existing row found for user_id:", user_id, "week:", next_week )
        
