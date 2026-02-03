@@ -83,7 +83,8 @@ async def progress(payload: ProgressionPayload):
             "completed": payload.completed.lower() == "true",
             "day_status": payload.day_status,
             "preference": payload.preference,
-            "feedback": payload.feedback or ""
+            "feedback": payload.feedback or "Ready to progress safely.",
+            "progression": payload.progression or "safe",
         }
 
         # 1️⃣ Run the progression agent
