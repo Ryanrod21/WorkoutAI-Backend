@@ -29,10 +29,9 @@ def update_preferences(user_id: UUID, prefs):
     ).execute()
 
 
-def archive_and_update_gym(user_id: str, week: int, new_data: dict):
+def archive_and_update_gym(user_id: str, next_week: int, new_data: dict):
 
     print("UPDATING GYM → user_id:", user_id, "type:", type(user_id))
-    print("week:", week, "type:", type(week))
     print("new_data:", new_data)
 
     """
@@ -44,7 +43,6 @@ def archive_and_update_gym(user_id: str, week: int, new_data: dict):
     current = supabase.table("gym")\
         .select("*")\
         .eq("user_id", user_id)\
-        .eq("week", week)\
         .execute().data
 
     
@@ -53,12 +51,20 @@ def archive_and_update_gym(user_id: str, week: int, new_data: dict):
         old_row["archived_at"] = datetime.utcnow().isoformat()
         supabase.table("gym_history").insert(old_row).execute()
 
-        # 3️⃣ Update existing row
+            
         supabase.table("gym")\
-            .update({**new_data, "selected_plan": None, "day_status": None})\
-            .eq("user_id", user_id)\
-            .eq("week", week)\
-            .execute()
+        .update({**new_data, "week": next_week})\
+        .eq("user_id", user_id)\
+        .execute()
+
+        
+        supabase.table("gym")\
+        .update({
+            "selected_plan": None,
+            "day_status": None
+        })\
+        .eq("user_id", user_id)\
+        .execute()
         
     else:
         print("No existing row found for user_id:", user_id, "week:", week)
