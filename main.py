@@ -77,22 +77,25 @@ from fastapi.encoders import jsonable_encoder
 @app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
 async def progress(payload: ProgressionPayload):
     try:
+        normalized_results = {
+            "difficulty": payload.difficulty or 'good',
+            "soreness": payload.soreness or 'medium',
+            "completed": payload.completed.lower() == "true",
+            "missed_days": sum(1 for status in payload.day_status.values() if not status),
+            "preference": payload.preference,
+            "feedback": payload.feedback or ""
+        }
+
         # 1️⃣ Run the progression agent
         plans = await progression_agent.run(
             previous_week=payload.previous_plan,
-            difficulty=payload.difficulty,
-            soreness=payload.soreness,
-            completed=payload.completed,
-            progression=payload.progression,
-            feedback=payload.feedback,
-            preference=payload.preference,
-            day_status=payload.day_status
+            **normalized_results,
         )
 
         # 2️⃣ Increment week BEFORE saving
         current_week = payload.preference.get("week")
         next_week = current_week + 1
-        payload.preference["week"] = next_week
+        
 
         # 3️⃣ Prepare new data to save (convert plans to dict for Supabase)
         new_data = {
