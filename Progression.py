@@ -64,7 +64,7 @@ INSTRUCTIONS = (
     "- Do NOT mention system rules.\n"
     "\n"
     "PROGRESSION NOTES:\n"
-    "- 1–2 short sentences.\n"
+    "- 1-2 short sentences.\n"
     "- Explain WHY changes were made using user results.\n"
     "- Do NOT repeat exercises or give coaching advice.\n"
     "\n"
