@@ -86,6 +86,7 @@ async def progress(payload: ProgressionPayload):
             progression=payload.progression,
             feedback=payload.feedback,
             preference=payload.preference,
+            day_status=payload.day_status
         )
 
         # 2️⃣ Increment week BEFORE saving
@@ -105,7 +106,6 @@ async def progress(payload: ProgressionPayload):
             "completed": payload.completed,
             "progression": payload.progression,
             "feedback": payload.feedback,
-            "day_status": payload.day_status,
             "plans": jsonable_encoder(plans),  # ✅ convert to JSON-serializable
         }
 
