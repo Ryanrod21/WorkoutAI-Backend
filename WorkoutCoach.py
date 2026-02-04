@@ -65,24 +65,16 @@ class ProgressionCoach:
         preference: dict = None,
         day_status: dict = None,
     ):
-        """
-        Sends previous week's plan + feedback to the agent.
-        Agent is responsible for generating 3 workout plans.
-        """
-
+   
         logging.info("Running ProgressionAgent")
 
-        # ✅ Validate input
         if not isinstance(previous_week, dict):
             logging.error("previous_week must be a dict")
             return []
 
-        # Determine next week number
-        next_week = week or previous_week.get("week", 1) + 1
 
-        # 🧠 Build agent input (THIS is what the agent sees)
         input_text = f"""
-        next_week={next_week}
+        next_week={week}
         previous_week={previous_week}
         difficulty={difficulty}
         soreness={soreness}

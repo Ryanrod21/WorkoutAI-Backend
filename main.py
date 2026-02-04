@@ -77,28 +77,26 @@ from fastapi.encoders import jsonable_encoder
 @app.post("/progress", response_model=List[ProgressedWorkoutPlansResponse])
 async def progress(payload: ProgressionPayload):
     try:
+        last_week = get_last_week_from_db(UUID(payload.user_id))
+        next_week = last_week + 1
+        
+
         normalized_results = {
             "difficulty": payload.difficulty or 'good',
             "soreness": payload.soreness or 'medium',
-            "completed": payload.completed.lower() == "true",
+            "completed": payload.completed.lower() in ("yes", "partially"),
             "day_status": payload.day_status,
             "preference": payload.preference,
             "feedback": payload.feedback or "Ready to progress safely.",
             "progression": payload.progression or "safe",
         }
 
-        # 1️⃣ Run the progression agent
         plans = await progression_agent.run(
             previous_week=payload.previous_plan,
             **normalized_results,
+            week=next_week
         )
 
-        # 2️⃣ Increment week BEFORE saving
-        last_week = get_last_week_from_db(UUID(payload.user_id))
-        next_week = last_week + 1
-        
-
-        # 3️⃣ Prepare new data to save (convert plans to dict for Supabase)
         new_data = {
             "days": payload.preference.get("days"),
             "goal": payload.preference.get("goal"),
@@ -110,13 +108,11 @@ async def progress(payload: ProgressionPayload):
             "completed": payload.completed,
             "progression": payload.progression,
             "feedback": payload.feedback,
-            "plans": jsonable_encoder(plans),  # ✅ convert to JSON-serializable
+            "plans": jsonable_encoder(plans), 
         }
 
-        # 4️⃣ Archive current week and save new week
         archive_and_update_gym(UUID(payload.user_id), next_week, new_data)
 
-        # 5️⃣ Return response (FastAPI handles Pydantic serialization)
         return plans
 
     except Exception as e:
