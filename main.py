@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
-from Database import get_last_week_from_db, archive_and_update_gym
+from Database import get_last_week_from_db, archive_and_update_gym, get_history_from_db
 from Progression import ProgressedWorkoutPlansResponse
 
 
@@ -79,6 +79,8 @@ async def progress(payload: ProgressionPayload):
     try:
         last_week = get_last_week_from_db(UUID(payload.user_id))
         next_week = last_week + 1
+
+        history = get_history_from_db(UUID(payload.user_id))
         
 
         normalized_results = {
@@ -94,7 +96,8 @@ async def progress(payload: ProgressionPayload):
         plans = await progression_agent.run(
             previous_week=payload.previous_plan,
             **normalized_results,
-            week=next_week
+            week=next_week,
+            history=history,
         )
 
         new_data = {

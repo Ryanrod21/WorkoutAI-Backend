@@ -30,6 +30,7 @@ class ProgressionCoach:
         week: int = None,
         preference: dict = None,
         day_status: dict = None,
+        history: dict = None,
     ):
         """
         Entry point for progressing a workout plan using an AI agent.
@@ -46,7 +47,8 @@ class ProgressionCoach:
                 feedback,
                 week,
                 preference,
-                day_status
+                day_status, 
+                history
             )
         ]
 
@@ -64,6 +66,7 @@ class ProgressionCoach:
         week: int = None,
         preference: dict = None,
         day_status: dict = None,
+        history: dict = None,
     ):
    
         logging.info("Running ProgressionAgent")
@@ -83,6 +86,7 @@ class ProgressionCoach:
         feedback={feedback}
         preference={preference}
         day_status={day_status}
+        history={history}
         """
 
         # 🔥 Run the agent (this is what enables 3 workouts)

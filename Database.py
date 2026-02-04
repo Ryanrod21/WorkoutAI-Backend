@@ -25,35 +25,19 @@ def update_preferences(user_id: UUID, prefs):
             "experience": prefs.experience,
             "minutes": prefs.minutes
         },
-        on_conflict=["user_id", "week"]  # matches your unique constraint
+        on_conflict=["user_id", "week"]  
     ).execute()
 
-def get_last_week_from_db(user_id: UUID) -> int:
-    """
-    Fetches the last saved week for a given user from the gym table.
-    Returns 0 if no previous week is found.
-    """
-    response = supabase.table("gym").select("week") \
-        .eq("user_id", str(user_id)) \
-        .order("week", desc=True).limit(1).execute()
-
-    data = response.data
-    if data and len(data) > 0:
-        return data[0]["week"]
-    return 0  # no previous week
 
 
 def archive_and_update_gym(user_id: str, next_week: int, new_data: dict):
-
-    print("UPDATING GYM → user_id:", user_id, "type:", type(user_id))
-    print("new_data:", new_data)
-
+    
     """
     Archives the old gym row for user/week into gym_history,
     then upserts new_data into the gym table.
     """
 
-      # 1️⃣ Fetch current row for this week
+      
     current = supabase.table("gym")\
         .select("*")\
         .eq("user_id", user_id)\
@@ -83,3 +67,28 @@ def archive_and_update_gym(user_id: str, next_week: int, new_data: dict):
     else:
         print("No existing row found for user_id:", user_id, "week:", next_week )
        
+
+def get_last_week_from_db(user_id: UUID) -> int:
+    """
+    Fetches the last saved week for a given user from the gym table.
+    Returns 0 if no previous week is found.
+    """
+    response = supabase.table("gym").select("week") \
+        .eq("user_id", str(user_id)) \
+        .order("week", desc=True).limit(1).execute()
+
+    data = response.data
+    if data and len(data) > 0:
+        return data[0]["week"]
+    return 0  
+
+def get_history_from_db(user_id: UUID):
+    
+    history = supabase.table('gym_history')\
+        .select("*")\
+        .eq("user_id", user_id)\
+        .execute().data
+    
+    return history if history else None
+    
+
