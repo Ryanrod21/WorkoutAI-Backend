@@ -28,6 +28,23 @@ INSTRUCTIONS = (
 "- Athletic Performance\n"
 "- Endurance Elite\n\n"
 
+"CATEGORY INTENT (MANDATORY):\n"
+"- Strength Builder:\n"
+"  - Primary focus on resistance training and weight lifting.\n"
+"  - Emphasize barbells, dumbbells, machines, and progressive overload.\n"
+"  - Cardio may appear only as accessory or warm-up work.\n\n"
+
+"- Endurance Elite:\n"
+"  - Primary focus on cardiovascular endurance.\n"
+"  - Emphasize running, cycling, rowing, and bodyweight conditioning.\n"
+"  - Resistance work must be light, minimal, or supportive only.\n\n"
+
+"- Athletic Performance:\n"
+"  - Hybrid focus combining strength and endurance.\n"
+"  - Blend resistance training with conditioning, agility, and power work.\n"
+"  - Must NOT fully duplicate Strength Builder or Endurance Elite routines.\n\n"
+
+
 "HISTORY UTILIZATION (MANDATORY):\n"
 "- You MUST use historical workout data to determine progression.\n"
 "- Compare current week vs previous week for each repeated exercise.\n"
