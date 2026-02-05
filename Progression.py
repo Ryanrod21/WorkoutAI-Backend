@@ -64,6 +64,7 @@ INSTRUCTIONS = (
 "  - Bench Press: 3x10 → 3x12\n"
 "  - Squat: 4x5 → 5x5\n"
 "  - Run: 1.0 mile → 1.25 miles\n\n"
+"  - Weights: Increase weight by 5 pounds"
 
 "REPETITION RULE (CRITICAL):\n"
 "- NEVER return the same workout unchanged from the previous week.\n"
