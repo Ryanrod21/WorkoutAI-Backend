@@ -91,4 +91,32 @@ def get_history_from_db(user_id: UUID):
     
     return history if history else None
     
+def delete_user(user_id: str):
+    """
+    Deletes a user from Supabase using the service role key,
+    and removes all related rows from gym and gym_history tables.
+    WARNING: This permanently removes the user and their data.
+    """
+    if not user_id:
+        print("No user_id provided")
+        return {"error": "No user_id provided"}
 
+    try:
+        # 1️⃣ Delete all user data from tables
+        supabase.table("gym_history").delete().eq("user_id", user_id).execute()
+        supabase.table("gym").delete().eq("user_id", user_id).execute()
+        # Add more table deletions here if you have other user-related tables
+
+        # 2️⃣ Delete the user from Supabase Auth
+        result = supabase.auth.admin.delete_user(user_id)
+
+        if result.error:
+            print("Error deleting user from auth:", result.error)
+            return {"error": result.error.message if hasattr(result.error, "message") else str(result.error)}
+
+        print("User and all related data deleted successfully:", user_id)
+        return {"success": True}
+
+    except Exception as e:
+        print("Error deleting user and data:", e)
+        return {"error": str(e)}

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from typing import List, Any, Dict
 from pydantic import BaseModel
 from WorkoutCoach import WorkoutCoach, WorkoutPlansResponse, ProgressionCoach
-from Database import get_last_week_from_db, archive_and_update_gym, get_history_from_db
+from Database import delete_user, get_last_week_from_db, archive_and_update_gym, get_history_from_db
 from Progression import ProgressedWorkoutPlansResponse
 
 
@@ -122,7 +122,17 @@ async def progress(payload: ProgressionPayload):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+    
 
+@app.post("/delete_user_data/{user_id}")
+async def delete_user_data(user_id: str):
+    try:
+        result = delete_user(user_id)
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 
