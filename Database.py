@@ -102,12 +102,12 @@ def delete_user(user_id: str):
         return {"error": "No user_id provided"}
 
     try:
-        # 1️⃣ Delete all user data from tables
+        
         supabase.table("gym_history").delete().eq("user_id", user_id).execute()
         supabase.table("gym").delete().eq("user_id", user_id).execute()
-        # Add more table deletions here if you have other user-related tables
+   
 
-        # 2️⃣ Delete the user from Supabase Auth
+  
         result = supabase.auth.admin.delete_user(user_id)
 
         if result.error:
