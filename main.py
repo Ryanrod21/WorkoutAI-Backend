@@ -19,7 +19,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "https://gymai-u2km.onrender.com"],
+    allow_origins=["http://localhost:5173", "https://gymai-u2km.onrender.com", "https://iron-path-five.vercel.app",],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
